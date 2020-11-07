@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-main ()
+void main ()
 {
 
 //DefiniC'C#o de variaveis
@@ -26,26 +26,26 @@ main ()
 
 
   // Imprime as matrizes definidas
-    printf("---------------------------- 1 - Matriz Gerada A ---------------------------------\n\n");
-
-    for(i = 0; i < linhaA; i++) {
-        for(j = 0; j < colunaA; j++) {
-            printf("%6.f", matrizA[i][j]);
-	    }
-        printf("\n\n");
-    }
-    printf(sizeof(matrizA[0][0]));
-    printf("\n\n");
-
-    printf("---------------------------- 2 - Matriz Gerada B ---------------------------------\n\n");
-    for(i = 0; i < linhaB; i++) {
-        for(j = 0; j < colunaB; j++) {
-	        printf ("%6.f", matrizB[i][j]);
-	    }
-        printf ("\n\n");
-    }
-
-//Processamento
+//    printf("---------------------------- 1 - Matriz Gerada A ---------------------------------\n\n");
+//
+//    for(i = 0; i < linhaA; i++) {
+//        for(j = 0; j < colunaA; j++) {
+//            printf("%6.f", matrizA[i][j]);
+//	    }
+//        printf("\n\n");
+//    }
+//    printf(sizeof(matrizA[0][0]));
+//    printf("\n\n");
+//
+//    printf("---------------------------- 2 - Matriz Gerada B ---------------------------------\n\n");
+//    for(i = 0; i < linhaB; i++) {
+//        for(j = 0; j < colunaB; j++) {
+//	        printf ("%6.f", matrizB[i][j]);
+//	    }
+//        printf ("\n\n");
+//    }
+//
+// Processamento
     for(i = 0; i < linhaA; i++) {
         for(j = 0; j < colunaB; j++) {
 	        matrizC[i][j] = 0;
@@ -56,11 +56,11 @@ main ()
     }
 
 //Saida
-    printf("---------------------------- 3 - A x B ---------------------------------\n\n");
-    for(i = 0; i < linhaA; i++) {
-        for(j = 0; j < colunaB; j++) {
-	        printf ("%6.f", matrizC[i][j]);
-	    }
-        printf ("\n\n");
-    }
+//    printf("---------------------------- 3 - A x B ---------------------------------\n\n");
+//    for(i = 0; i < linhaA; i++) {
+//        for(j = 0; j < colunaB; j++) {
+//	        printf ("%6.f", matrizC[i][j]);
+//	    }
+//        printf ("\n\n");
+//    }
 }				

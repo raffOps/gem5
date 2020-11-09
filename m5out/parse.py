@@ -3,7 +3,7 @@ import os
 import json
 
 
-for file_name in os.listdir():
+for file_name in os.listdir(os.getcwd()):
     if file_name.startswith("stats") and file_name.endswith(".txt"):
         with open(file_name) as file:
             linhas = file.readlines()

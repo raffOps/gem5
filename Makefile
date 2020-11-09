@@ -1,15 +1,21 @@
 matrix_multiplication:
 	./gem5  orgb_configs/simulate.py run-benchmark -c orgb_progs/matrix_multiplication
-	mv m5out/stats.txt m5out/stats_matrix_multiplication.txt
+	mv m5out/stats.txt m5out/stats_matrix_multiplication_l1_assoc_8.txt
 
-matrix_multiplication_teste1:
-	./gem5  orgb_configs/simulate.py run-benchmark -c orgb_progs/matrix_multiplication --l1_size 2MB
-	mv m5out/stats.txt m5out/stats_matrix_multiplication_teste1.txt
+	./gem5  orgb_configs/simulate.py run-benchmark -c orgb_progs/matrix_multiplication --l1_assoc 1
+	mv m5out/stats.txt m5out/stats_matrix_multiplication_l1_assoc_1.txt
 
-matrix_multiplication_teste2:
+	./gem5  orgb_configs/simulate.py run-benchmark -c orgb_progs/matrix_multiplication --l1_assoc 2
+	mv m5out/stats.txt m5out/stats_matrix_multiplication_l1_assoc_2.txt
+
+	./gem5  orgb_configs/simulate.py run-benchmark -c orgb_progs/matrix_multiplication --l1_assoc 4
+	mv m5out/stats.txt m5out/stats_matrix_multiplication_l1_assoc_4.txt
+
+	./gem5  orgb_configs/simulate.py run-benchmark -c orgb_progs/matrix_multiplication --l1_assoc 16
+	mv m5out/stats.txt m5out/stats_matrix_multiplication_l1_assoc_16.txt
+
 	./gem5  orgb_configs/simulate.py run-benchmark -c orgb_progs/matrix_multiplication --l1_assoc 32
-	mv m5out/stats.txt m5out/stats_matrix_multiplication_teste2.txt
+	mv m5out/stats.txt m5out/stats_matrix_multiplication_l1_assoc_32.txt
 
-matrix_multiplication_teste3:
-	./gem5  orgb_configs/simulate.py run-benchmark -c orgb_progs/matrix_multiplication --l1_tag_latency 64
-	mv m5out/stats.txt m5out/stats_matrix_multiplication_teste3.txt
+	python m5out/parse.py
+

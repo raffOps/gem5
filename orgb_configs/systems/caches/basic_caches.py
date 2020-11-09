@@ -26,8 +26,8 @@ class BasicL1ICache(Cache):
 class BasicL1DCache(Cache):
 
     size = '16kB'
-    #assoc = 8
-    assoc = 1
+    assoc = 8
+    #assoc = 1
     tag_latency = 1
     data_latency = 2
     response_latency = 2

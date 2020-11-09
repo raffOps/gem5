@@ -26,7 +26,7 @@ class BaseSystem(System):
     def addCPU(self, CPU):
         self.cpu = CPU
 
-    def addL1L2L3(self, L1DLatency, L2Cache, L3Cache):
+    def addL1L2L3(self, args, L2Cache, L3Cache):
 
         # Comm between L1-L2
         self.l2bus  = SystemXBar()
@@ -46,7 +46,7 @@ class BaseSystem(System):
 
         for core in self.cpu:
             core.icache  = BasicL1ICache()
-            core.dcache  = BasicL1DCache(L1DLatency)
+            core.dcache  = BasicL1DCache(args)
 
             core.icache.cpu_side = core.icache_port
             core.icache.mem_side = self.l2bus.slave

@@ -20,6 +20,7 @@ class SystemManager:
         "MyO3CPU" : MyO3CPU()}
 
     def getSystem(self, args):
+        print(args)
         cpu_name    = args.cpu
         #num_cpu     = args.num_cpus
 
@@ -33,7 +34,7 @@ class SystemManager:
         sys.addCPU(self.available_cpus[cpu_name])
 
         sys.setMemoryMode("timing")
-        sys.addL1L2L3(2, l2, l3)
+        sys.addL1L2L3(args, l2, l3)
 
         sys.completeSetup()
 

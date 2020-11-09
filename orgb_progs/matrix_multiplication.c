@@ -5,7 +5,7 @@ void main ()
 {
 
 //DefiniC'C#o de variaveis
-    int i, j, linhaA = 10, colunaA = 10, linhaB = 10, colunaB = 10;
+    int i, j, linhaA = 30, colunaA = 30, linhaB = 30, colunaB = 30;
 
 
 

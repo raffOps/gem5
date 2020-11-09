@@ -90,6 +90,19 @@ parser_other.add_argument(
     help = """Command-line options to the binary.
     Use "" around the string.""")
 
+
+parser_other.add_argument("--l1_size", default = "")
+parser_other.add_argument("--l2_size", default = "")
+parser_other.add_argument("--l3_size", default = "")
+
+parser_other.add_argument("--l1_assoc", default = "")
+parser_other.add_argument("--l2_assoc", default = "")
+parser_other.add_argument("--l3_assoc", default = "")
+
+parser_other.add_argument("--l1_tag_latency", default = "")
+parser_other.add_argument("--l2_tag_latency", default = "")
+parser_other.add_argument("--l3_tag_latency", default = "")
+
 args = main_parser.parse_args()
 
 ############################################################
@@ -98,6 +111,7 @@ args = main_parser.parse_args()
 
 print(bcol.I("Setting up system ..."))
 print(bcol.W("Using " + args.cpu + " CPU."))
+#print(args)
 system = SystemManager().getSystem(args)
 print(bcol.OK("Done."))
 print("")

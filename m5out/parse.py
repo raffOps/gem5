@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[251]:
+# In[ ]:
 
 
 import re
@@ -12,7 +12,7 @@ import numpy as np
 import sys
 
 
-# In[249]:
+# In[ ]:
 
 
 def txt_to_dataframe(algoritmo):
@@ -23,10 +23,10 @@ def txt_to_dataframe(algoritmo):
                 linhas = file.readlines()
                 metricas = dict([re.findall("([^ ]*) *([0-9]*[.]?[0-9]*).*#",linha)[0] for linha in linhas[2:-2]])
                 parametro = re.findall("(.*)_(.*)_(.*).txt", file_name)[0]
-                metricas[parametro[1]] = parametro[2]
+                #print(parametro)
+                metricas[parametro[1]] = int(parametro[2])
                 csv.append(metricas)
     df = pd.DataFrame(csv)
-    df[parametro[1]]= df[parametro[1]].astype(np.uint8)
     df.sort_values(parametro[1], ascending=True, inplace=True)
     return df[[ parametro[1],
                 "sim_seconds", 
@@ -36,16 +36,11 @@ def txt_to_dataframe(algoritmo):
                 "system.l3cache.overall_miss_rate::total" ]].sort_values(parametro[1])
 
 
-# In[250]:
-
-
-if __name__ == "__main__":
-    df = txt_to_dataframe(sys.argv[1])
-    df.to_csv(sys.argv[1]+".csv")
-
-
 # In[ ]:
 
 
-
+if __name__ == "__main__":
+    algoritmo = sys.argv[1]
+    df = txt_to_dataframe(algoritmo)
+    df.to_csv(sys.argv[1]+".csv")
 

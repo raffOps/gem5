@@ -27,7 +27,6 @@ class BasicL1DCache(Cache):
 
     size = '16kB'
     assoc = 8
-    #assoc = 1
     tag_latency = 1
     data_latency = 2
     response_latency = 2
@@ -47,7 +46,6 @@ class BasicL2Cache(Cache):
 
     size = '128kB'
     assoc = 8
-    #assoc = 1
     tag_latency = 8
     data_latency = 12
     response_latency = 4
@@ -67,8 +65,7 @@ class BasicL2Cache(Cache):
 class BasicL3Cache(Cache):
 
     size = '1MB'
-    #assoc = 16
-    assoc = 1
+    assoc = 16
     tag_latency = 12
     data_latency = 36
     response_latency = 4

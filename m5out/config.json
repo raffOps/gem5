@@ -138,7 +138,7 @@
                 "indexing_policy": {
                     "name": "indexing_policy", 
                     "eventq_index": 0, 
-                    "assoc": 1, 
+                    "assoc": 16, 
                     "cxx_class": "SetAssociative", 
                     "path": "system.l3cache.tags.indexing_policy", 
                     "entry_size": 64, 
@@ -146,7 +146,7 @@
                     "size": 1048576
                 }, 
                 "sequential_access": false, 
-                "assoc": 1, 
+                "assoc": 16, 
                 "power_model": [], 
                 "cxx_class": "BaseSetAssoc", 
                 "p_state_clk_gate_max": 1000000000000, 
@@ -171,7 +171,7 @@
             "name": "l3cache", 
             "p_state_clk_gate_bins": 20, 
             "sequential_access": false, 
-            "assoc": 1
+            "assoc": 16
         }, 
         "eventq_index": 0, 
         "default_p_state": "UNDEFINED", 
@@ -1112,7 +1112,7 @@
                     "indexing_policy": {
                         "name": "indexing_policy", 
                         "eventq_index": 0, 
-                        "assoc": 32, 
+                        "assoc": 256, 
                         "cxx_class": "SetAssociative", 
                         "path": "system.cpu.dcache.tags.indexing_policy", 
                         "entry_size": 64, 
@@ -1120,7 +1120,7 @@
                         "size": 16384
                     }, 
                     "sequential_access": false, 
-                    "assoc": 32, 
+                    "assoc": 256, 
                     "power_model": [], 
                     "cxx_class": "BaseSetAssoc", 
                     "p_state_clk_gate_max": 1000000000000, 
@@ -1145,7 +1145,7 @@
                 "name": "dcache", 
                 "p_state_clk_gate_bins": 20, 
                 "sequential_access": false, 
-                "assoc": 32
+                "assoc": 256
             }, 
             "commitToDecodeDelay": 1, 
             "smtIQPolicy": "Partitioned", 

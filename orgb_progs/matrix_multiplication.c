@@ -5,9 +5,7 @@ void main ()
 {
 
 //DefiniC'C#o de variaveis
-    int i, j, linhaA = 30, colunaA = 30, linhaB = 30, colunaB = 30;
-
-
+    int i, j, linhaA = 10, colunaA = 300, linhaB = 30, colunaB = 300;
 
     float matrizA[linhaA][colunaA], matrizB[linhaB][colunaB],
     matrizC[linhaA][colunaB], aux = 0;

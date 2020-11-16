@@ -11,7 +11,7 @@ from m5.objects import Cache
 
 class BasicL1ICache(Cache):
 
-    size = '32kB'
+    size = '16kB'
     assoc = 8
     tag_latency = 1
     data_latency = 1
@@ -20,8 +20,16 @@ class BasicL1ICache(Cache):
     tgts_per_mshr = 16
 
     def __init__(self, options=None):
-        super(BasicL1ICache, self).__init__()        
-        pass
+        super(BasicL1ICache, self).__init__()
+
+    def __init__(self, options):
+        super(BasicL1ICache, self).__init__()
+        if options.l1i_size:
+            self.size = options.l1i_size
+        if options.l1i_assoc:
+            self.assoc = int(options.l1i_assoc)
+        if options.l1i_tag_latency:
+            self.tag_latency = int(options.l1i_tag_latency)
 
 class BasicL1DCache(Cache):
 
@@ -35,16 +43,16 @@ class BasicL1DCache(Cache):
 
     def __init__(self, options):
         super(BasicL1DCache, self).__init__()
-        if options.l1_size:
-            self.size = options.l1_size
-        if options.l1_assoc:
-            self.assoc = int(options.l1_assoc)
-        if options.l1_tag_latency:
-            self.tag_latency = int(options.l1_tag_latency)
+        if options.l1d_size:
+            self.size = options.l1d_size
+        if options.l1d_assoc:
+            self.assoc = int(options.l1d_assoc)
+        if options.l1d_tag_latency:
+            self.tag_latency = int(options.l1d_tag_latency)
 
 class BasicL2Cache(Cache):
 
-    size = '128kB'
+    size = '256kB'
     assoc = 8
     tag_latency = 8
     data_latency = 12
@@ -64,7 +72,7 @@ class BasicL2Cache(Cache):
 
 class BasicL3Cache(Cache):
 
-    size = '1MB'
+    size = '2MB'
     assoc = 16
     tag_latency = 12
     data_latency = 36

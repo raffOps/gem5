@@ -45,7 +45,7 @@ class BaseSystem(System):
         self.l3cache.mem_side = self.membus.slave
 
         for core in self.cpu:
-            core.icache  = BasicL1ICache()
+            core.icache  = BasicL1ICache(args)
             core.dcache  = BasicL1DCache(args)
 
             core.icache.cpu_side = core.icache_port

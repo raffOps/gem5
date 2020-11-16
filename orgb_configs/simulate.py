@@ -91,15 +91,18 @@ parser_other.add_argument(
     Use "" around the string.""")
 
 
-parser_other.add_argument("--l1_size", default = "")
+parser_other.add_argument("--l1d_size", default = "")
+parser_other.add_argument("--l1i_size", default = "")
 parser_other.add_argument("--l2_size", default = "")
 parser_other.add_argument("--l3_size", default = "")
 
-parser_other.add_argument("--l1_assoc", default = "")
+parser_other.add_argument("--l1d_assoc", default = "")
+parser_other.add_argument("--l1i_assoc", default = "")
 parser_other.add_argument("--l2_assoc", default = "")
 parser_other.add_argument("--l3_assoc", default = "")
 
-parser_other.add_argument("--l1_tag_latency", default = "")
+parser_other.add_argument("--l1d_tag_latency", default = "")
+parser_other.add_argument("--l1i_tag_latency", default = "")
 parser_other.add_argument("--l2_tag_latency", default = "")
 parser_other.add_argument("--l3_tag_latency", default = "")
 

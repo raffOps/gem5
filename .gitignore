@@ -27,3 +27,5 @@ cscope.out
 m5out/.ipynb_checkpoints/
 
 *.ipynb
+
+m5out/.~MatrixMultiplication.xlsx

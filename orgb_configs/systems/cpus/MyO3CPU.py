@@ -230,3 +230,8 @@ class MyO3CPU(DerivO3CPU):
     smtCommitPolicy = 'RoundRobin' # SMT Commit Policy
 
     needsTSO = True # Enable TSO Memory model
+
+    def __init__(self, args=None):
+        super(MyO3CPU, self).__init__()
+        if args and args.branch_predictor:
+            self.branchPred = getattr(m5.objects, args.branch_predictor)()

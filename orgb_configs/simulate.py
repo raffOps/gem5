@@ -106,16 +106,17 @@ parser_other.add_argument("--l1i_tag_latency", default = "")
 parser_other.add_argument("--l2_tag_latency", default = "")
 parser_other.add_argument("--l3_tag_latency", default = "")
 
-args = main_parser.parse_args()
+parser_other.add_argument("--branch_predictor", default = 'TournamentBP')
 
+args = main_parser.parse_args()
+print(args)
 ############################################################
 # Setup system
 ############################################################
 
 print(bcol.I("Setting up system ..."))
 print(bcol.W("Using " + args.cpu + " CPU."))
-#print(args)
-system = SystemManager().getSystem(args)
+system = SystemManager(args).getSystem(args)
 print(bcol.OK("Done."))
 print("")
 

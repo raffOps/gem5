@@ -19,6 +19,11 @@ class SystemManager:
     available_cpus = {
         "MyO3CPU" : MyO3CPU()}
 
+    def __init__(self, args):
+        print("fjdoifjd")
+        self.available_cpus = {
+            "MyO3CPU": MyO3CPU(args)}
+
     def getSystem(self, args):
         print(args)
         cpu_name    = args.cpu

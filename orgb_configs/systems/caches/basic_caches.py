@@ -52,7 +52,7 @@ class BasicL1DCache(Cache):
 
 class BasicL2Cache(Cache):
 
-    size = '256kB'
+    size = '128kB'
     assoc = 8
     tag_latency = 8
     data_latency = 12
@@ -72,7 +72,7 @@ class BasicL2Cache(Cache):
 
 class BasicL3Cache(Cache):
 
-    size = '2MB'
+    size = '1MB'
     assoc = 16
     tag_latency = 12
     data_latency = 36

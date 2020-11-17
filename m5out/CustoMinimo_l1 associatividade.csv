@@ -1,0 +1,8 @@
+,l1 associatividade,system.cpu.dcache.overall_miss_rate::total
+0,1,0.052505
+2,2,0.046496
+4,4,0.044667
+6,8,0.044800
+1,16,0.044533
+3,32,0.044533
+5,64,0.044533

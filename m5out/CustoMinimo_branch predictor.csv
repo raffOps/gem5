@@ -1,0 +1,4 @@
+,branch predictor,system.cpu.branchPred.condIncorrect
+0,BiMode,1103
+1,Local,877
+2,Tournament,803

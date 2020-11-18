@@ -30,26 +30,9 @@ def txt_to_dataframe(algoritmo, parametro):
                 csv.append(metricas)
     df = pd.DataFrame(csv)
     df.sort_values(parametro, ascending=True, inplace=True)
-    if algoritmo == "MatrixMultiplication" and parametro == "branch predictor":
-        segundo_parametro = "system.cpu.branchPred.condIncorrect"
-    elif algoritmo == "MatrixMultiplication" and parametro == "l1 associatividade":
-        segundo_parametro = "system.cpu.dcache.overall_miss_rate::total"
-    elif algoritmo == "MatrixMultiplication" and parametro == "l1 size":
-        segundo_parametro = "sim_seconds"
-    elif algoritmo == "CustoMinimo" and parametro == "branch predictor":
-        segundo_parametro = "system.cpu.branchPred.condIncorrect"
-    elif algoritmo == "CustoMinimo" and parametro == "l1 associatividade":
-        segundo_parametro = "system.cpu.dcache.overall_miss_rate::total"
-    elif algoritmo == "CustoMinimo" and parametro == "l1 size":
-        segundo_parametro = "sim_seconds"
-    elif algoritmo == "Mergesort" and parametro == "branch predictor":
-        segundo_parametro = "system.cpu.branchPred.condIncorrect"
-    elif algoritmo == "Mergesort" and parametro == "l1 associatividade":
-        segundo_parametro = "system.cpu.dcache.overall_miss_rate::total"
-    elif algoritmo == "Mergesort" and parametro == "l1 size":
-        segundo_parametro = "sim_seconds"
-
-    return df[[ parametro, segundo_parametro]].sort_values(parametro)
+    df.reset_index(drop=True, inplace=True)
+    return df[[parametro, "sim_seconds", "system.cpu.branchPred.condIncorrect",
+               "system.cpu.dcache.overall_miss_rate::total", "system.cpu.ipc"]]
 
 
 # In[ ]:
@@ -59,5 +42,5 @@ if __name__ == "__main__":
     algoritmo = sys.argv[1]
     parametro = sys.argv[2]
     df = txt_to_dataframe(algoritmo, parametro)
-    df.to_csv(algoritmo+"_"+parametro+".csv")
+    df.to_excel(algoritmo+"_"+parametro+".xlsx")
 

@@ -1,4 +1,5 @@
-,l1 size,sim_seconds
-0,16,0.003308
-1,32,0.003324
-2,64,0.003321
+,l1 size,sim_seconds,system.cpu.branchPred.condIncorrect,system.cpu.dcache.overall_miss_rate::total,system.cpu.ipc
+0,8,0.003327,93006,0.001969,0.585119
+1,16,0.003308,91413,0.001350,0.588574
+2,32,0.003324,94763,0.000671,0.585751
+3,64,0.003321,95176,0.000374,0.586159

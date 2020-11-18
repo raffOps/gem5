@@ -1,4 +1,4 @@
-,branch predictor,system.cpu.branchPred.condIncorrect
-0,BiMode,1103
-1,Local,877
-2,Tournament,803
+,branch predictor,sim_seconds,system.cpu.branchPred.condIncorrect,system.cpu.dcache.overall_miss_rate::total,system.cpu.ipc
+0,BiMode,0.000046,1103,0.044605,0.194031
+1,Local,0.000045,877,0.046034,0.199426
+2,Tournament,0.000045,803,0.044800,0.197865

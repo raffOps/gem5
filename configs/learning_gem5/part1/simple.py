@@ -37,6 +37,7 @@ IMPORTANT: If you modify this file, it's likely that the Learning gem5 book
 
 """
 
+
 from __future__ import print_function
 
 # import the m5 (gem5) library created when gem5 is built
@@ -88,7 +89,7 @@ system.system_port = system.membus.slave
 isa = str(m5.defines.buildEnv['TARGET_ISA']).lower()
 
 # Run 'hello' and use the compiled ISA to find the binary
-binary = 'tests/test-progs/hello/bin/' + isa + '/linux/hello'
+binary = f'tests/test-progs/hello/bin/{isa}/linux/hello'
 
 # Create a process for a simple "Hello World" application
 process = Process()

@@ -216,19 +216,9 @@ def makeArmSystem(mem_mode, machine_type, num_cpus=1, mdesc=None,
         "VExpress_EMM64": "vexpress.aarch64.20140821.dtb",
     }
 
-    default_kernels = {
-        "RealViewPBX": "vmlinux.arm.smp.fb.2.6.38.8",
-        "VExpress_EMM": "vmlinux.aarch32.ll_20131205.0-gem5",
-        "VExpress_EMM64": "vmlinux.aarch64.20140821",
-    }
-
     pci_devices = []
 
-    if bare_metal:
-        self = ArmSystem()
-    else:
-        self = LinuxArmSystem()
-
+    self = ArmSystem() if bare_metal else LinuxArmSystem()
     if not mdesc:
         # generic system
         mdesc = SysConfig()
@@ -250,18 +240,19 @@ def makeArmSystem(mem_mode, machine_type, num_cpus=1, mdesc=None,
     machine_type = platform_class.__name__
     self.realview = platform_class()
 
-    if not dtb_filename and not (bare_metal or ignore_dtb):
+    if not dtb_filename and not bare_metal and not ignore_dtb:
         try:
             dtb_filename = default_dtbs[machine_type]
         except KeyError:
-            fatal("No DTB specified and no default DTB known for '%s'" % \
-                  machine_type)
+            fatal(f"No DTB specified and no default DTB known for '{machine_type}'")
 
-    if isinstance(self.realview, VExpress_EMM64):
-        if os.path.split(mdesc.disk())[-1] == 'linux-aarch32-ael.img':
-            print("Selected 64-bit ARM architecture, updating default "
-                  "disk image...")
-            mdesc.diskname = 'linaro-minimal-aarch64.img'
+    if (
+        isinstance(self.realview, VExpress_EMM64)
+        and os.path.split(mdesc.disk())[-1] == 'linux-aarch32-ael.img'
+    ):
+        print("Selected 64-bit ARM architecture, updating default "
+              "disk image...")
+        mdesc.diskname = 'linaro-minimal-aarch64.img'
 
 
     # Attach any PCI devices this platform supports
@@ -304,6 +295,12 @@ def makeArmSystem(mem_mode, machine_type, num_cpus=1, mdesc=None,
         # EOT character on UART will end the simulation
         self.realview.uart[0].end_on_eot = True
     else:
+        default_kernels = {
+            "RealViewPBX": "vmlinux.arm.smp.fb.2.6.38.8",
+            "VExpress_EMM": "vmlinux.aarch32.ll_20131205.0-gem5",
+            "VExpress_EMM64": "vmlinux.aarch64.20140821",
+        }
+
         if machine_type in default_kernels:
             self.kernel = binary(default_kernels[machine_type])
 
@@ -339,12 +336,13 @@ def makeArmSystem(mem_mode, machine_type, num_cpus=1, mdesc=None,
         # behavior has been replaced with a more explicit option per
         # the error message below. The disk can have any name now and
         # doesn't need to include 'android' substring.
-        if (os.path.split(mdesc.disk())[-1]).lower().count('android'):
-            if 'android' not in mdesc.os_type():
-                fatal("It looks like you are trying to boot an Android " \
-                      "platform.  To boot Android, you must specify " \
-                      "--os-type with an appropriate Android release on " \
-                      "the command line.")
+        if (os.path.split(mdesc.disk())[-1]).lower().count(
+            'android'
+        ) and 'android' not in mdesc.os_type():
+            fatal("It looks like you are trying to boot an Android " \
+                  "platform.  To boot Android, you must specify " \
+                  "--os-type with an appropriate Android release on " \
+                  "the command line.")
 
         # android-specific tweaks
         if 'android' in mdesc.os_type():
@@ -517,7 +515,7 @@ def connectX86RubySystem(x86_sys):
 
 
 def makeX86System(mem_mode, numCPUs=1, mdesc=None, self=None, Ruby=False):
-    if self == None:
+    if self is None:
         self = X86System()
 
     if not mdesc:
@@ -620,6 +618,7 @@ def makeX86System(mem_mode, numCPUs=1, mdesc=None, self=None, Ruby=False):
                 dest_io_apic_id = io_apic.id,
                 dest_io_apic_intin = apicPin)
         base_entries.append(assign_to_apic)
+
     assignISAInt(0, 2)
     assignISAInt(1, 1)
     for i in range(3, 15):

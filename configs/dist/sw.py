@@ -47,17 +47,21 @@ def build_switch(options):
     switch = EtherSwitch()
     # instantiate distEtherLinks to connect switch ports
     # to other gem5 instances
-    switch.portlink = [DistEtherLink(speed = options.ethernet_linkspeed,
-                                      delay = options.ethernet_linkdelay,
-                                      dist_rank = options.dist_rank,
-                                      dist_size = options.dist_size,
-                                      server_name = options.dist_server_name,
-                                      server_port = options.dist_server_port,
-                                      sync_start = options.dist_sync_start,
-                                      sync_repeat = options.dist_sync_repeat,
-                                      is_switch = True,
-                                      num_nodes = options.dist_size)
-                       for i in xrange(options.dist_size)]
+    switch.portlink = [
+        DistEtherLink(
+            speed=options.ethernet_linkspeed,
+            delay=options.ethernet_linkdelay,
+            dist_rank=options.dist_rank,
+            dist_size=options.dist_size,
+            server_name=options.dist_server_name,
+            server_port=options.dist_server_port,
+            sync_start=options.dist_sync_start,
+            sync_repeat=options.dist_sync_repeat,
+            is_switch=True,
+            num_nodes=options.dist_size,
+        )
+        for _ in xrange(options.dist_size)
+    ]
 
     for (i, link) in enumerate(switch.portlink):
         link.int0 = switch.interface[i]

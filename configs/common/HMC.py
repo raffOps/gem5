@@ -294,7 +294,7 @@ def config_hmc_host_ctrl(opt, system):
     system.hmc_host = SubSystem()
 
     # Create additional crossbar for arch1
-    if opt.arch == "distributed" or opt.arch == "mixed":
+    if opt.arch in ["distributed", "mixed"]:
         clk = '100GHz'
         vd = VoltageDomain(voltage='1V')
         # Create additional crossbar for arch1
@@ -313,8 +313,7 @@ def config_hmc_host_ctrl(opt, system):
     # Memmory ranges of serial link for arch-0. Same as the ranges of vault
     # controllers (4 vaults to 1 serial link)
     if opt.arch == "same":
-        ser_ranges = [AddrRange(0, (4*slar)-1) for i in
-                      range(opt.num_serial_links)]
+        ser_ranges = [AddrRange(0, (4*slar)-1) for _ in range(opt.num_serial_links)]
     # Memmory ranges of serial link for arch-1. Distributed range accross
     # links
     if opt.arch == "distributed":
@@ -342,8 +341,9 @@ def config_hmc_host_ctrl(opt, system):
 
     # enable global monitor
     if opt.enable_global_monitor:
-        system.hmc_host.lmonitor = [CommMonitor() for i in
-                                    xrange(opt.num_serial_links)]
+        system.hmc_host.lmonitor = [
+            CommMonitor() for _ in xrange(opt.num_serial_links)
+        ]
 
     # set the clock frequency for serial link
     for i in xrange(opt.num_serial_links):
@@ -455,14 +455,10 @@ def config_hmc_dev(opt, system, hmc_host):
                             index].slave
                     system.hmc_dev.buffers[
                             index].master = system.hmc_dev.xbar[j].slave
-                else:
-                    # Don't connect the xbar to itself
-                    pass
-
     # Two crossbars are connected to all other crossbars-Other 2 vault
     # can only direct traffic to it local vaults
     if opt.arch == "mixed":
-        system.hmc_dev.buffer30 = Bridge(ranges=system.mem_ranges[0:4])
+        system.hmc_dev.buffer30 = Bridge(ranges=system.mem_ranges[:4])
         system.hmc_dev.xbar[3].master = system.hmc_dev.buffer30.slave
         system.hmc_dev.buffer30.master = system.hmc_dev.xbar[0].slave
 
@@ -474,7 +470,7 @@ def config_hmc_dev(opt, system, hmc_host):
         system.hmc_dev.xbar[3].master = system.hmc_dev.buffer32.slave
         system.hmc_dev.buffer32.master = system.hmc_dev.xbar[2].slave
 
-        system.hmc_dev.buffer20 = Bridge(ranges=system.mem_ranges[0:4])
+        system.hmc_dev.buffer20 = Bridge(ranges=system.mem_ranges[:4])
         system.hmc_dev.xbar[2].master = system.hmc_dev.buffer20.slave
         system.hmc_dev.buffer20.master = system.hmc_dev.xbar[0].slave
 

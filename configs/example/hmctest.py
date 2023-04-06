@@ -56,8 +56,10 @@ def build_system(options):
     vd = VoltageDomain(voltage='1V')
     system.clk_domain = SrcClockDomain(clock=clk, voltage_domain=vd)
     # add traffic generators to the system
-    system.tgen = [TrafficGen(config_file=options.tgen_cfg_file) for i in
-                   xrange(options.num_tgen)]
+    system.tgen = [
+        TrafficGen(config_file=options.tgen_cfg_file)
+        for _ in xrange(options.num_tgen)
+    ]
     # Config memory system with given HMC arch
     MemConfig.config_mem(options, system)
     # Connect the traffic generatiors
@@ -87,9 +89,7 @@ def build_system(options):
                 system.tgen[i].port = hh.lmonitor[i].slave
             else:
                 system.tgen[i].port = hh.seriallink[i].slave
-    # set up the root SimObject
-    root = Root(full_system=False, system=system)
-    return root
+    return Root(full_system=False, system=system)
 
 
 def main():

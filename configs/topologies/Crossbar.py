@@ -58,19 +58,24 @@ class Crossbar(SimpleTopology):
 
         link_count = len(self.nodes)
 
-        int_links = []
-        for i in range(len(self.nodes)):
-            int_links.append(IntLink(link_id=(link_count+i),
-                                     src_node=routers[i],
-                                     dst_node=xbar,
-                                     latency = link_latency))
-
+        int_links = [
+            IntLink(
+                link_id=(link_count + i),
+                src_node=routers[i],
+                dst_node=xbar,
+                latency=link_latency,
+            )
+            for i in range(len(self.nodes))
+        ]
         link_count += len(self.nodes)
 
-        for i in range(len(self.nodes)):
-            int_links.append(IntLink(link_id=(link_count+i),
-                                     src_node=xbar,
-                                     dst_node=routers[i],
-                                     latency = link_latency))
-
+        int_links.extend(
+            IntLink(
+                link_id=(link_count + i),
+                src_node=xbar,
+                dst_node=routers[i],
+                latency=link_latency,
+            )
+            for i in range(len(self.nodes))
+        )
         network.int_links = int_links

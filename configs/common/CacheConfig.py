@@ -171,15 +171,15 @@ def config_cache(options, system):
 # The 'ExternalCache' class provides this adaptation by rewriting the name,
 # eliminating distracting changes elsewhere in the config code.
 class ExternalCache(ExternalSlave):
-    def __getattr__(cls, attr):
+    def __getattr__(self, attr):
         if (attr == "cpu_side"):
             attr = "port"
-        return super(ExternalSlave, cls).__getattr__(attr)
+        return super(ExternalSlave, self).__getattr__(attr)
 
-    def __setattr__(cls, attr, value):
+    def __setattr__(self, attr, value):
         if (attr == "cpu_side"):
             attr = "port"
-        return super(ExternalSlave, cls).__setattr__(attr, value)
+        return super(ExternalSlave, self).__setattr__(attr, value)
 
 def ExternalCacheFactory(port_type):
     def make(name):

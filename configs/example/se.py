@@ -69,21 +69,11 @@ def get_processes(options):
     """Interprets provided options and returns a list of processes"""
 
     multiprocesses = []
-    inputs = []
-    outputs = []
-    errouts = []
-    pargs = []
-
     workloads = options.cmd.split(';')
-    if options.input != "":
-        inputs = options.input.split(';')
-    if options.output != "":
-        outputs = options.output.split(';')
-    if options.errout != "":
-        errouts = options.errout.split(';')
-    if options.options != "":
-        pargs = options.options.split(';')
-
+    inputs = options.input.split(';') if options.input != "" else []
+    outputs = options.output.split(';') if options.output != "" else []
+    errouts = options.errout.split(';') if options.errout != "" else []
+    pargs = options.options.split(';') if options.options != "" else []
     idx = 0
     for wrkld in workloads:
         process = Process(pid = 100 + idx)
@@ -94,11 +84,7 @@ def get_processes(options):
             with open(options.env, 'r') as f:
                 process.env = [line.rstrip() for line in f]
 
-        if len(pargs) > idx:
-            process.cmd = [wrkld] + pargs[idx].split()
-        else:
-            process.cmd = [wrkld]
-
+        process.cmd = [wrkld] + pargs[idx].split() if len(pargs) > idx else [wrkld]
         if len(inputs) > idx:
             process.input = inputs[idx]
         if len(outputs) > idx:
@@ -109,11 +95,10 @@ def get_processes(options):
         multiprocesses.append(process)
         idx += 1
 
-    if options.smt:
-        assert(options.cpu_type == "DerivO3CPU")
-        return multiprocesses, idx
-    else:
+    if not options.smt:
         return multiprocesses, 1
+    assert(options.cpu_type == "DerivO3CPU")
+    return multiprocesses, idx
 
 
 parser = optparse.OptionParser()
@@ -141,19 +126,21 @@ if options.bench:
     for app in apps:
         try:
             if buildEnv['TARGET_ISA'] == 'alpha':
-                exec("workload = %s('alpha', 'tru64', '%s')" % (
-                        app, options.spec_input))
+                exec(f"workload = {app}('alpha', 'tru64', '{options.spec_input}')")
             elif buildEnv['TARGET_ISA'] == 'arm':
-                exec("workload = %s('arm_%s', 'linux', '%s')" % (
-                        app, options.arm_iset, options.spec_input))
+                exec(
+                    f"workload = {app}('arm_{options.arm_iset}', 'linux', '{options.spec_input}')"
+                )
             else:
-                exec("workload = %s(buildEnv['TARGET_ISA', 'linux', '%s')" % (
-                        app, options.spec_input))
+                exec(
+                    f"workload = {app}(buildEnv['TARGET_ISA', 'linux', '{options.spec_input}')"
+                )
             multiprocesses.append(workload.makeProcess())
         except:
-            print("Unable to find workload for %s: %s" %
-                  (buildEnv['TARGET_ISA'], app),
-                  file=sys.stderr)
+            print(
+                f"Unable to find workload for {buildEnv['TARGET_ISA']}: {app}",
+                file=sys.stderr,
+            )
             sys.exit(1)
 elif options.cmd:
     multiprocesses, numThreads = get_processes(options)

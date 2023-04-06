@@ -64,9 +64,18 @@ try:
 except:
     print("Did not find packet proto definitions, attempting to generate")
     from subprocess import call
-    error = call(['protoc', '--python_out=configs/dram',
-                  '--proto_path=src/proto', 'src/proto/packet.proto'])
-    if not error:
+    if error := call(
+        [
+            'protoc',
+            '--python_out=configs/dram',
+            '--proto_path=src/proto',
+            'src/proto/packet.proto',
+        ]
+    ):
+        print("Failed to import packet proto definitions")
+        exit(-1)
+
+    else:
         print("Generated packet proto definitions")
 
         try:
@@ -76,10 +85,6 @@ except:
             exit(-1)
 
         import packet_pb2
-    else:
-        print("Failed to import packet proto definitions")
-        exit(-1)
-
 parser = optparse.OptionParser()
 
 parser.add_option("--mem-type", type="choice", default="DDR3_1600_8x8",
@@ -182,7 +187,7 @@ def create_trace(filename, max_addr, burst_size, itt):
 
     # add the packet header
     header = packet_pb2.PacketHeader()
-    header.obj_id = "lat_mem_rd for range 0:" + str(max_addr)
+    header.obj_id = f"lat_mem_rd for range 0:{str(max_addr)}"
     # assume the default tick rate (1 ps)
     header.tick_freq = 1000000000000
     protolib.encodeMessage(proto_out, header)
@@ -231,7 +236,7 @@ for r in ranges:
     nxt_state = nxt_state + 1
 
     # the measuring states
-    for i in range(iterations):
+    for _ in range(iterations):
         cfg_file.write("STATE %d %d TRACE %s 0\n" %
                        (nxt_state, period, filename))
         nxt_state = nxt_state + 1
@@ -263,7 +268,6 @@ system.tgen.port = system.monitor.slave
 # basic to explore some of the options
 from common.Caches import *
 
-# a starting point for an L3 cache
 class L3Cache(Cache):
     assoc = 16
     tag_latency = 20

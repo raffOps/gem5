@@ -124,5 +124,6 @@ class Cluster(BaseTopology):
                 network.ext_links.append(link)
 
     def __len__(self):
-        return len([i for i in self.nodes if type(i) != Cluster]) + \
-               sum([len(i) for i in self.nodes if type(i) == Cluster])
+        return len([i for i in self.nodes if type(i) != Cluster]) + sum(
+            len(i) for i in self.nodes if type(i) == Cluster
+        )

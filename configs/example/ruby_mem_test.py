@@ -96,32 +96,35 @@ if options.num_cpus > block_size:
 #
 # Currently ruby does not support atomic or uncacheable accesses
 #
-cpus = [ MemTest(max_loads = options.maxloads,
-                 percent_functional = options.functional,
-                 percent_uncacheable = 0,
-                 progress_interval = options.progress,
-                 suppress_func_warnings = options.suppress_func_warnings) \
-         for i in xrange(options.num_cpus) ]
+cpus = [
+    MemTest(
+        max_loads=options.maxloads,
+        percent_functional=options.functional,
+        percent_uncacheable=0,
+        progress_interval=options.progress,
+        suppress_func_warnings=options.suppress_func_warnings,
+    ) for _ in xrange(options.num_cpus)
+]
 
 system = System(cpu = cpus,
                 clk_domain = SrcClockDomain(clock = options.sys_clock),
                 mem_ranges = [AddrRange(options.mem_size)])
 
 if options.num_dmas > 0:
-    dmas = [ MemTest(max_loads = options.maxloads,
-                     percent_functional = 0,
-                     percent_uncacheable = 0,
-                     progress_interval = options.progress,
-                     suppress_func_warnings =
-                                        not options.suppress_func_warnings) \
-             for i in xrange(options.num_dmas) ]
-    system.dma_devices = dmas
+     dmas = [
+         MemTest(
+             max_loads=options.maxloads,
+             percent_functional=0,
+             percent_uncacheable=0,
+             progress_interval=options.progress,
+             suppress_func_warnings=not options.suppress_func_warnings,
+         ) for _ in xrange(options.num_dmas)
+     ]
+     system.dma_devices = dmas
 else:
-    dmas = []
+     dmas = []
 
-dma_ports = []
-for (i, dma) in enumerate(dmas):
-    dma_ports.append(dma.test)
+dma_ports = [dma.test for dma in dmas]
 Ruby.create_system(options, False, system, dma_ports = dma_ports)
 
 # Create a top-level voltage domain and clock domain

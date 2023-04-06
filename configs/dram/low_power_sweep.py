@@ -45,7 +45,7 @@ from m5.objects import *
 from m5.util import addToPath
 from m5.stats import periodicStatDump
 
-addToPath(os.getcwd() + '/configs/common')
+addToPath(f'{os.getcwd()}/configs/common')
 import MemConfig
 
 # This script aims at triggering low power state transitions in the DRAM
@@ -134,89 +134,86 @@ period = 250000000
 
 # We specify the states in a config file input to the traffic generator.
 cfg_file_name = "configs/dram/lowp_sweep.cfg"
-cfg_file = open(cfg_file_name, 'w')
+with open(cfg_file_name, 'w') as cfg_file:
+    # Get the number of banks
+    nbr_banks = int(system.mem_ctrls[0].banks_per_rank.value)
 
-# Get the number of banks
-nbr_banks = int(system.mem_ctrls[0].banks_per_rank.value)
+    # determine the burst size in bytes
+    burst_size = int((system.mem_ctrls[0].devices_per_rank.value *
+                      system.mem_ctrls[0].device_bus_width.value *
+                      system.mem_ctrls[0].burst_length.value) / 8)
 
-# determine the burst size in bytes
-burst_size = int((system.mem_ctrls[0].devices_per_rank.value *
-                  system.mem_ctrls[0].device_bus_width.value *
-                  system.mem_ctrls[0].burst_length.value) / 8)
+    # next, get the page size in bytes (the rowbuffer size is already in bytes)
+    page_size = system.mem_ctrls[0].devices_per_rank.value * \
+        system.mem_ctrls[0].device_rowbuffer_size.value
 
-# next, get the page size in bytes (the rowbuffer size is already in bytes)
-page_size = system.mem_ctrls[0].devices_per_rank.value * \
-    system.mem_ctrls[0].device_rowbuffer_size.value
+    # Inter-request delay should be such that we can hit as many transitions
+    # to/from low power states as possible to. We provide a min and max itt to the
+    # traffic generator and it randomises in the range. The parameter is in
+    # seconds and we need it in ticks (ps).
+    itt_min = system.mem_ctrls[0].tBURST.value * 1000000000000
 
-# Inter-request delay should be such that we can hit as many transitions
-# to/from low power states as possible to. We provide a min and max itt to the
-# traffic generator and it randomises in the range. The parameter is in
-# seconds and we need it in ticks (ps).
-itt_min = system.mem_ctrls[0].tBURST.value * 1000000000000
+    #The itt value when set to (tRAS + tRP + tCK) covers the case where
+    # a read command is delayed beyond the delay from ACT to PRE_PDN entry of the
+    # previous command. For write command followed by precharge, this delay
+    # between a write and power down entry will be tRCD + tCL + tWR + tRP + tCK.
+    # As we use this delay as a unit and create multiples of it as bigger delays
+    # for the sweep, this parameter works for reads, writes and mix of them.
+    pd_entry_time = (system.mem_ctrls[0].tRAS.value +
+                     system.mem_ctrls[0].tRP.value +
+                     system.mem_ctrls[0].tCK.value) * 1000000000000
 
-#The itt value when set to (tRAS + tRP + tCK) covers the case where
-# a read command is delayed beyond the delay from ACT to PRE_PDN entry of the
-# previous command. For write command followed by precharge, this delay
-# between a write and power down entry will be tRCD + tCL + tWR + tRP + tCK.
-# As we use this delay as a unit and create multiples of it as bigger delays
-# for the sweep, this parameter works for reads, writes and mix of them.
-pd_entry_time = (system.mem_ctrls[0].tRAS.value +
-                 system.mem_ctrls[0].tRP.value +
-                 system.mem_ctrls[0].tCK.value) * 1000000000000
+    # We sweep itt max using the multipliers specified by the user.
+    itt_max_str = args.itt_list.strip().split()
+    itt_max_multiples = map(lambda x : int(x), itt_max_str)
+    if len(itt_max_multiples) == 0:
+        fatal("String for itt-max-list detected empty\n")
 
-# We sweep itt max using the multipliers specified by the user.
-itt_max_str = args.itt_list.strip().split()
-itt_max_multiples = map(lambda x : int(x), itt_max_str)
-if len(itt_max_multiples) == 0:
-    fatal("String for itt-max-list detected empty\n")
+    itt_max_values = map(lambda m : pd_entry_time * m, itt_max_multiples)
 
-itt_max_values = map(lambda m : pd_entry_time * m, itt_max_multiples)
+    # Generate request addresses in the entire range, assume we start at 0
+    max_addr = mem_range.end
 
-# Generate request addresses in the entire range, assume we start at 0
-max_addr = mem_range.end
+    # For max stride, use min of the page size and 512 bytes as that should be
+    # more than enough
+    max_stride = min(512, page_size)
+    mid_stride = 4 * burst_size
+    stride_values = [burst_size, mid_stride, max_stride]
 
-# For max stride, use min of the page size and 512 bytes as that should be
-# more than enough
-max_stride = min(512, page_size)
-mid_stride = 4 * burst_size
-stride_values = [burst_size, mid_stride, max_stride]
+    # be selective about bank utilization instead of going from 1 to the number of
+    # banks
+    bank_util_values = [1, nbr_banks // 2, nbr_banks]
 
-# be selective about bank utilization instead of going from 1 to the number of
-# banks
-bank_util_values = [1, int(nbr_banks/2), nbr_banks]
-
-# Next we create the config file, but first a comment
-cfg_file.write("""# STATE state# period mode=DRAM
+    # Next we create the config file, but first a comment
+    cfg_file.write("""# STATE state# period mode=DRAM
 # read_percent start_addr end_addr req_size min_itt max_itt data_limit
 # stride_size page_size #banks #banks_util addr_map #ranks\n""")
 
-nxt_state = 0
-for itt_max in itt_max_values:
-    for bank in bank_util_values:
-        for stride_size in stride_values:
-            cfg_file.write("STATE %d %d %s %d 0 %d %d "
-                           "%d %d %d %d %d %d %d %d %d\n" %
-                           (nxt_state, period, "DRAM", args.rd_perc, max_addr,
-                            burst_size, itt_min, itt_max, 0, stride_size,
-                            page_size, nbr_banks, bank, args.addr_map,
-                            args.mem_ranks))
-            nxt_state = nxt_state + 1
+    nxt_state = 0
+    for itt_max in itt_max_values:
+        for bank in bank_util_values:
+            for stride_size in stride_values:
+                cfg_file.write("STATE %d %d %s %d 0 %d %d "
+                               "%d %d %d %d %d %d %d %d %d\n" %
+                               (nxt_state, period, "DRAM", args.rd_perc, max_addr,
+                                burst_size, itt_min, itt_max, 0, stride_size,
+                                page_size, nbr_banks, bank, args.addr_map,
+                                args.mem_ranks))
+                nxt_state = nxt_state + 1
 
-# State for idle period
-idle_period = args.idle_end
-cfg_file.write("STATE %d %d IDLE\n" % (nxt_state, idle_period))
+    # State for idle period
+    idle_period = args.idle_end
+    cfg_file.write("STATE %d %d IDLE\n" % (nxt_state, idle_period))
 
-# Init state is state 0
-cfg_file.write("INIT 0\n")
+    # Init state is state 0
+    cfg_file.write("INIT 0\n")
 
-# Go through the states one by one
-for state in range(1, nxt_state + 1):
-    cfg_file.write("TRANSITION %d %d 1\n" % (state - 1, state))
+    # Go through the states one by one
+    for state in range(1, nxt_state + 1):
+        cfg_file.write("TRANSITION %d %d 1\n" % (state - 1, state))
 
-# Transition from last state to itself to not break the probability math
-cfg_file.write("TRANSITION %d %d 1\n" % (nxt_state, nxt_state))
-cfg_file.close()
-
+    # Transition from last state to itself to not break the probability math
+    cfg_file.write("TRANSITION %d %d 1\n" % (nxt_state, nxt_state))
 # create a traffic generator, and point it to the file we just created
 system.tgen = TrafficGen(config_file = cfg_file_name)
 

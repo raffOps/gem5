@@ -34,6 +34,7 @@ IMPORTANT: If you modify this file, it's likely that the Learning gem5 book
            also needs to be updated. For now, email Jason <jason@lowepower.com>
 
 """
+
 from __future__ import print_function
 
 # import the m5 (gem5) library created when gem5 is built
@@ -79,6 +80,4 @@ m5.instantiate()
 
 print("Beginning simulation!")
 exit_event = m5.simulate()
-print('Exiting @ tick {} because {}'.format(
-         m5.curTick(), exit_event.getCause())
-     )
+print(f'Exiting @ tick {m5.curTick()} because {exit_event.getCause()}')

@@ -85,7 +85,7 @@ class Benchmark(object):
             self.args = []
 
         if not hasattr(self.__class__, 'output'):
-            self.output = '%s.out' % self.name
+            self.output = f'{self.name}.out'
 
         if not hasattr(self.__class__, 'simpoint'):
             self.simpoint = None
@@ -93,13 +93,14 @@ class Benchmark(object):
         try:
             func = getattr(self.__class__, input_set)
         except AttributeError:
-            raise AttributeError, \
-                  'The benchmark %s does not have the %s input set' % \
-                  (self.name, input_set)
+            raise (
+                AttributeError,
+                f'The benchmark {self.name} does not have the {input_set} input set',
+            )
 
         executable = joinpath(spec_dist, 'binaries', isa, os, self.binary)
         if not isfile(executable):
-            raise AttributeError, '%s not found' % executable
+            raise (AttributeError, f'{executable} not found')
         self.executable = executable
 
         # root of tree for input & output data files
@@ -113,7 +114,7 @@ class Benchmark(object):
         self.input_set = input_set
 
         if not isdir(inputs_dir):
-            raise AttributeError, '%s not found' % inputs_dir
+            raise (AttributeError, f'{inputs_dir} not found')
 
         self.inputs_dir = [ inputs_dir ]
         if isdir(all_dir):
@@ -122,12 +123,12 @@ class Benchmark(object):
             self.outputs_dir = outputs_dir
 
         if not hasattr(self.__class__, 'stdin'):
-            self.stdin = joinpath(inputs_dir, '%s.in' % self.name)
+            self.stdin = joinpath(inputs_dir, f'{self.name}.in')
             if not isfile(self.stdin):
                 self.stdin = None
 
         if not hasattr(self.__class__, 'stdout'):
-            self.stdout = joinpath(outputs_dir, '%s.out' % self.name)
+            self.stdout = joinpath(outputs_dir, f'{self.name}.out')
             if not isfile(self.stdout):
                 self.stdout = None
 
@@ -135,9 +136,10 @@ class Benchmark(object):
 
     def makeProcessArgs(self, **kwargs):
         # set up default args for Process object
-        process_args = {}
-        process_args['cmd'] = [ self.name ] + self.args
-        process_args['executable'] = self.executable
+        process_args = {
+            'cmd': [self.name] + self.args,
+            'executable': self.executable,
+        }
         if self.stdin:
             process_args['input'] = self.stdin
         if self.stdout:
@@ -145,7 +147,7 @@ class Benchmark(object):
         if self.simpoint:
             process_args['simpoint'] = self.simpoint
         # explicit keywords override defaults
-        process_args.update(kwargs)
+        process_args |= kwargs
 
         return process_args
 
@@ -306,8 +308,14 @@ class mesa(Benchmark):
     stdin = None
 
     def __set_args(self, frames):
-        self.args = [ '-frames', frames, '-meshfile', '%s.in' % self.name,
-                      '-ppmfile', '%s.ppm' % self.name ]
+        self.args = [
+            '-frames',
+            frames,
+            '-meshfile',
+            f'{self.name}.in',
+            '-ppmfile',
+            f'{self.name}.ppm',
+        ]
 
     def test(self, isa, os):
         self.__set_args('10')
@@ -667,36 +675,36 @@ class vortex(Benchmark):
     def __init__(self, isa, os, input_set):
         if (isa in ('alpha', 'arm', 'thumb', 'aarch64')):
             self.endian = 'lendian'
-        elif (isa == 'sparc' or isa == 'sparc32'):
+        elif isa in ['sparc', 'sparc32']:
             self.endian = 'bendian'
         else:
-            raise AttributeError, "unknown ISA %s" % isa
+            raise (AttributeError, f"unknown ISA {isa}")
 
         super(vortex, self).__init__(isa, os, input_set)
 
     def test(self, isa, os):
-        self.args = [ '%s.raw' % self.endian ]
+        self.args = [f'{self.endian}.raw']
         self.output = 'vortex.out'
 
     def train(self, isa, os):
-        self.args = [ '%s.raw' % self.endian ]
+        self.args = [f'{self.endian}.raw']
         self.output = 'vortex.out'
 
     def smred(self, isa, os):
-        self.args = [ '%s.raw' % self.endian ]
+        self.args = [f'{self.endian}.raw']
         self.output = 'vortex.out'
 
     def mdred(self, isa, os):
-        self.args = [ '%s.raw' % self.endian ]
+        self.args = [f'{self.endian}.raw']
         self.output = 'vortex.out'
 
     def lgred(self, isa, os):
-        self.args = [ '%s.raw' % self.endian ]
+        self.args = [f'{self.endian}.raw']
         self.output = 'vortex.out'
 
 class vortex1(vortex):
     def ref(self, isa, os):
-        self.args = [ '%s1.raw' % self.endian ]
+        self.args = [f'{self.endian}1.raw']
         self.output = 'vortex1.out'
         self.simpoint = 271*100E6
 
@@ -704,13 +712,13 @@ class vortex1(vortex):
 class vortex2(vortex):
     def ref(self, isa, os):
         self.simpoint = 1024*100E6
-        self.args = [ '%s2.raw' % self.endian ]
+        self.args = [f'{self.endian}2.raw']
         self.output = 'vortex2.out'
 
 class vortex3(vortex):
     def ref(self, isa, os):
         self.simpoint = 564*100E6
-        self.args = [ '%s3.raw' % self.endian ]
+        self.args = [f'{self.endian}3.raw']
         self.output = 'vortex3.out'
 
 class vpr(MinneDefaultBenchmark):
@@ -718,7 +726,6 @@ class vpr(MinneDefaultBenchmark):
     number = 175
     lang = 'C'
 
-# not sure about vpr minnespec place.in
 class vpr_place(vpr):
     args = [ 'net.in', 'arch.in', 'place.out', 'dum.out', '-nodisp',
              '-place_only', '-init_t', '5', '-exit_t', '0.005',
@@ -749,8 +756,8 @@ if __name__ == '__main__':
     from pprint import pprint
     for bench in all:
         for input_set in 'ref', 'test', 'train':
-            print('class: %s' % bench.__name__)
+            print(f'class: {bench.__name__}')
             x = bench('alpha', 'tru64', input_set)
-            print('%s: %s' % (x, input_set))
+            print(f'{x}: {input_set}')
             pprint(x.makeProcessArgs())
             print()

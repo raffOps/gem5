@@ -58,8 +58,7 @@ class MeshDirCorners_XY(SimpleTopology):
         dir_nodes = []
         dma_nodes = []
         for node in nodes:
-            if node.type == 'L1Cache_Controller' or \
-            node.type == 'L2Cache_Controller':
+            if node.type in ['L1Cache_Controller', 'L2Cache_Controller']:
                 cache_nodes.append(node)
             elif node.type == 'Directory_Controller':
                 dir_nodes.append(node)
@@ -79,7 +78,7 @@ class MeshDirCorners_XY(SimpleTopology):
 
         # Create the routers in the mesh
         routers = [Router(router_id=i, latency = router_latency) \
-            for i in range(num_routers)]
+                for i in range(num_routers)]
         network.routers = routers
 
         # link counter to set unique link ids
@@ -114,7 +113,7 @@ class MeshDirCorners_XY(SimpleTopology):
         link_count += 1
 
         # Connect the dma nodes to router 0.  These should only be DMA nodes.
-        for (i, node) in enumerate(dma_nodes):
+        for node in dma_nodes:
             assert(node.type == 'DMA_Controller')
             ext_links.append(ExtLink(link_id=link_count, ext_node=node,
                                      int_node=routers[0],

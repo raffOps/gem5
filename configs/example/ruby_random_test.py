@@ -80,15 +80,7 @@ if args:
      print("Error: script doesn't take any positional arguments")
      sys.exit(1)
 
-#
-# Create the ruby random tester
-#
-
-# Check the protocol
-check_flush = False
-if buildEnv['PROTOCOL'] == 'MOESI_hammer':
-    check_flush = True
-
+check_flush = buildEnv['PROTOCOL'] == 'MOESI_hammer'
 tester = RubyTester(check_flush = check_flush,
                     checks_to_complete = options.maxloads,
                     wakeup_frequency = options.wakeup_freq)

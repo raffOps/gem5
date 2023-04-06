@@ -75,10 +75,9 @@ def get(name):
     """Get a CPU class from a user provided class name or alias."""
 
     try:
-        cpu_class = _cpu_classes[name]
-        return cpu_class
+        return _cpu_classes[name]
     except KeyError:
-        print("%s is not a valid CPU model." % (name,))
+        print(f"{name} is not a valid CPU model.")
         sys.exit(1)
 
 def print_cpu_list():
@@ -89,10 +88,7 @@ def print_cpu_list():
     for name, cls in _cpu_classes.items():
         print("\t%s" % name)
 
-        # Try to extract the class documentation from the class help
-        # string.
-        doc = inspect.getdoc(cls)
-        if doc:
+        if doc := inspect.getdoc(cls):
             for line in doc_wrapper.wrap(doc):
                 print(line)
 
@@ -133,7 +129,7 @@ from m5.defines import buildEnv
 from importlib import import_module
 for package in [ "generic", buildEnv['TARGET_ISA']]:
     try:
-        package = import_module(".cores." + package, package=__package__)
+        package = import_module(f".cores.{package}", package=__package__)
     except ImportError:
         # No timing models for this ISA
         continue

@@ -89,7 +89,6 @@ def setup_memory_controllers(system, ruby, dir_cntrls, options):
     ruby.block_size_bytes = options.cacheline_size
     ruby.memory_size_bits = 48
 
-    index = 0
     mem_ctrls = []
     crossbars = []
 
@@ -105,7 +104,7 @@ def setup_memory_controllers(system, ruby, dir_cntrls, options):
     # attached to a directory controller.  A separate controller is created
     # for each address range as the abstract memory can handle only one
     # contiguous address range as of now.
-    for dir_cntrl in dir_cntrls:
+    for index, dir_cntrl in enumerate(dir_cntrls):
         crossbar = None
         if len(system.mem_ranges) > 1:
             crossbar = IOXBar()
@@ -124,17 +123,12 @@ def setup_memory_controllers(system, ruby, dir_cntrls, options):
             mem_ctrls.append(mem_ctrl)
             dir_ranges.append(mem_ctrl.range)
 
-            if crossbar != None:
-                mem_ctrl.port = crossbar.master
-            else:
-                mem_ctrl.port = dir_cntrl.memory
-
-        index += 1
+            mem_ctrl.port = crossbar.master if crossbar != None else dir_cntrl.memory
         dir_cntrl.addr_ranges = dir_ranges
 
     system.mem_ctrls = mem_ctrls
 
-    if len(crossbars) > 0:
+    if crossbars:
         ruby.crossbars = crossbars
 
 
@@ -239,7 +233,7 @@ def send_evicts(options):
     # 1. The O3 model must keep the LSQ coherent with the caches
     # 2. The x86 mwait instruction is built on top of coherence invalidations
     # 3. The local exclusive monitor in ARM systems
-    if options.cpu_type == "DerivO3CPU" or \
-       buildEnv['TARGET_ISA'] in ('x86', 'arm'):
-        return True
-    return False
+    return options.cpu_type == "DerivO3CPU" or buildEnv['TARGET_ISA'] in (
+        'x86',
+        'arm',
+    )

@@ -67,11 +67,11 @@ from common.Caches import *
 from common import Options
 
 def cmd_line_template():
-    if options.command_line and options.command_line_file:
-        print("Error: --command-line and --command-line-file are "
-              "mutually exclusive")
-        sys.exit(1)
     if options.command_line:
+        if options.command_line_file:
+            print("Error: --command-line and --command-line-file are "
+                  "mutually exclusive")
+            sys.exit(1)
         return options.command_line
     if options.command_line_file:
         return open(options.command_line_file).read().strip()
@@ -208,8 +208,11 @@ def build_test_system(np):
         # If restoring from checkpoint or fast forwarding, the code that does this for
         # FutureCPUClass is in the Simulation module. If the check passes then the
         # elastic trace probe is attached to the switch CPUs.
-        if options.elastic_trace_en and options.checkpoint_restore == None and \
-            not options.fast_forward:
+        if (
+            options.elastic_trace_en
+            and options.checkpoint_restore is None
+            and not options.fast_forward
+        ):
             CpuConfig.config_etrace(TestCPUClass, test_sys.cpu, options)
 
         CacheConfig.config_cache(options, test_sys)
@@ -307,18 +310,17 @@ if options.benchmark:
     try:
         bm = Benchmarks[options.benchmark]
     except KeyError:
-        print("Error benchmark %s has not been defined." % options.benchmark)
-        print("Valid benchmarks are: %s" % DefinedBenchmarks)
+        print(f"Error benchmark {options.benchmark} has not been defined.")
+        print(f"Valid benchmarks are: {DefinedBenchmarks}")
         sys.exit(1)
+elif options.dual:
+    bm = [SysConfig(disk=options.disk_image, rootdev=options.root_device,
+                    mem=options.mem_size, os_type=options.os_type),
+          SysConfig(disk=options.disk_image, rootdev=options.root_device,
+                    mem=options.mem_size, os_type=options.os_type)]
 else:
-    if options.dual:
-        bm = [SysConfig(disk=options.disk_image, rootdev=options.root_device,
-                        mem=options.mem_size, os_type=options.os_type),
-              SysConfig(disk=options.disk_image, rootdev=options.root_device,
-                        mem=options.mem_size, os_type=options.os_type)]
-    else:
-        bm = [SysConfig(disk=options.disk_image, rootdev=options.root_device,
-                        mem=options.mem_size, os_type=options.os_type)]
+    bm = [SysConfig(disk=options.disk_image, rootdev=options.root_device,
+                    mem=options.mem_size, os_type=options.os_type)]
 
 np = options.num_cpus
 

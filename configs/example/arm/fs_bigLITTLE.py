@@ -73,12 +73,11 @@ def _to_ticks(value):
 def _using_pdes(root):
     """Determine if the simulator is using multiple parallel event queues"""
 
-    for obj in root.descendants():
-        if not m5.proxy.isproxy(obj.eventq_index) and \
-               obj.eventq_index != root.eventq_index:
-            return True
-
-    return False
+    return any(
+        not m5.proxy.isproxy(obj.eventq_index)
+        and obj.eventq_index != root.eventq_index
+        for obj in root.descendants()
+    )
 
 
 class BigCluster(devices.CpuCluster):
@@ -201,10 +200,10 @@ def build(options):
         "lpj=19988480",
         "norandmaps",
         "loglevel=8",
-        "mem=%s" % default_mem_size,
+        f"mem={default_mem_size}",
         "root=/dev/vda1",
         "rw",
-        "init=%s" % options.kernel_init,
+        f"init={options.kernel_init}",
         "vmalloc=768MB",
     ]
 

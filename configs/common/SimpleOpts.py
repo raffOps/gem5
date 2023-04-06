@@ -52,7 +52,7 @@ def add_option(*args, **kwargs):
 
     if (parser.has_option(args[0]) or
             (len(args) > 1 and parser.has_option(args[1])) ):
-        m5.fatal("Duplicate option: %s" % str(args))
+        m5.fatal(f"Duplicate option: {args}")
 
     if called_parse_args:
         m5.fatal("Can't add an option after calling SimpleOpts.parse_args")

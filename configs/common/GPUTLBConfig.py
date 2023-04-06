@@ -42,7 +42,8 @@ from m5.objects import *
 
 def TLB_constructor(level):
 
-    constructor_call = "X86GPUTLB(size = options.L%(level)dTLBentries, \
+    return (
+        "X86GPUTLB(size = options.L%(level)dTLBentries, \
             assoc = options.L%(level)dTLBassoc, \
             hitLatency = options.L%(level)dAccessLatency,\
             missLatency2 = options.L%(level)dMissLatency,\
@@ -51,25 +52,28 @@ def TLB_constructor(level):
             clk_domain = SrcClockDomain(\
                 clock = options.GPUClock,\
                 voltage_domain = VoltageDomain(\
-                    voltage = options.gpu_voltage)))" % locals()
-    return constructor_call
+                    voltage = options.gpu_voltage)))"
+        % locals()
+    )
 
 def Coalescer_constructor(level):
 
-    constructor_call = "TLBCoalescer(probesPerCycle = \
+    return (
+        "TLBCoalescer(probesPerCycle = \
                 options.L%(level)dProbesPerCycle, \
                 coalescingWindow = options.L%(level)dCoalescingWindow,\
                 disableCoalescing = options.L%(level)dDisableCoalescing,\
                 clk_domain = SrcClockDomain(\
                     clock = options.GPUClock,\
                     voltage_domain = VoltageDomain(\
-                        voltage = options.gpu_voltage)))" % locals()
-    return constructor_call
+                        voltage = options.gpu_voltage)))"
+        % locals()
+    )
 
 def create_TLB_Coalescer(options, my_level, my_index, TLB_name, Coalescer_name):
     # arguments: options, TLB level, number of private structures for this Level,
     # TLB name and  Coalescer name
-    for i in xrange(my_index):
+    for _ in xrange(my_index):
         TLB_name.append(eval(TLB_constructor(my_level)))
         Coalescer_name.append(eval(Coalescer_constructor(my_level)))
 

@@ -63,10 +63,9 @@ def get(name):
     """Get a memory class from a user provided class name."""
 
     try:
-        mem_class = _mem_classes[name]
-        return mem_class
+        return _mem_classes[name]
     except KeyError:
-        print("%s is not a valid memory controller." % (name,))
+        print(f"{name} is not a valid memory controller.")
         sys.exit(1)
 
 def print_mem_list():
@@ -77,10 +76,7 @@ def print_mem_list():
     for name, cls in _mem_classes.items():
         print("\t%s" % name)
 
-        # Try to extract the class documentation from the class help
-        # string.
-        doc = inspect.getdoc(cls)
-        if doc:
+        if doc := inspect.getdoc(cls):
             for line in doc_wrapper.wrap(doc):
                 print(line)
 

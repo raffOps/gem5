@@ -70,9 +70,7 @@ def make_implicant(implicant_string):
         elif char == '1':
             ret_mask |= 1
             ret_match |= 1
-        elif char == 'x':
-            pass
-        else:
+        elif char != 'x':
             print("Can't parse implicant character", char)
 
     return (ret_mask, ret_match)
@@ -115,18 +113,20 @@ def literal(value):
 def bin(op, left, right):
     def body(env):
         ret = TimingExprBin()
-        ret.op = 'timingExpr' + op
+        ret.op = f'timingExpr{op}'
         ret.left = left(env)
         ret.right = right(env)
         return ret
+
     return body
 
 def un(op, arg):
     def body(env):
         ret = TimingExprUn()
-        ret.op = 'timingExpr' + op
+        ret.op = f'timingExpr{op}'
         ret.arg = arg(env)
         return ret
+
     return body
 
 def ref(name):

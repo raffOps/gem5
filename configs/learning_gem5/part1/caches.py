@@ -56,7 +56,6 @@ class L1Cache(Cache):
 
     def __init__(self, options=None):
         super(L1Cache, self).__init__()
-        pass
 
     def connectBus(self, bus):
         """Connect this cache to a memory-side bus"""

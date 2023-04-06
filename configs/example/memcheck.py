@@ -118,8 +118,8 @@ if args:
 if options.random:
      # Generate a tree with a valid number of testers
      tree_depth = random.randint(1, 4)
-     cachespec = [random.randint(1, 3) for i in range(tree_depth)]
-     testerspec = [random.randint(1, 3) for i in range(tree_depth + 1)]
+     cachespec = [random.randint(1, 3) for _ in range(tree_depth)]
+     testerspec = [random.randint(1, 3) for _ in range(tree_depth + 1)]
      print("Generated random tree -c", ':'.join(map(str, cachespec)),
          "-t", ':'.join(map(str, testerspec)))
 else:
@@ -130,7 +130,7 @@ else:
           print("Error: Unable to parse caches or testers option")
           sys.exit(1)
 
-     if len(cachespec) < 1:
+     if not cachespec:
           print("Error: Must have at least one level of caches")
           sys.exit(1)
 
@@ -160,20 +160,13 @@ for c in cachespec:
           print("Error: Must have at least one cache per level")
      multiplier.append(multiplier[-1] * c)
 
-numtesters = 0
-for t, m in zip(testerspec, multiplier):
-     numtesters += t * m
-
+numtesters = sum(t * m for t, m in zip(testerspec, multiplier))
 # Define a prototype L1 cache that we scale for all successive levels
 proto_l1 = Cache(size = '32kB', assoc = 4,
                  tag_latency = 1, data_latency = 1, response_latency = 1,
                  tgts_per_mshr = 8)
 
-if options.blocking:
-     proto_l1.mshrs = 1
-else:
-     proto_l1.mshrs = 4
-
+proto_l1.mshrs = 1 if options.blocking else 4
 if options.prefetchers:
      proto_l1.prefetcher = TaggedPrefetcher()
 elif options.stridepref:
@@ -197,23 +190,20 @@ for scale in cachespec[:-1]:
 
 # Create a config to be used by all the traffic generators
 cfg_file_name = "configs/example/memcheck.cfg"
-cfg_file = open(cfg_file_name, 'w')
-
-# Three states, with random, linear and idle behaviours. The random
-# and linear states access memory in the range [0 : 16 Mbyte] with 8
-# byte and 64 byte accesses respectively.
-cfg_file.write("STATE 0 10000000 RANDOM 65 0 16777216 8 50000 150000 0\n")
-cfg_file.write("STATE 1 10000000 LINEAR 65 0 16777216 64 50000 150000 0\n")
-cfg_file.write("STATE 2 10000000 IDLE\n")
-cfg_file.write("INIT 0\n")
-cfg_file.write("TRANSITION 0 1 0.5\n")
-cfg_file.write("TRANSITION 0 2 0.5\n")
-cfg_file.write("TRANSITION 1 0 0.5\n")
-cfg_file.write("TRANSITION 1 2 0.5\n")
-cfg_file.write("TRANSITION 2 0 0.5\n")
-cfg_file.write("TRANSITION 2 1 0.5\n")
-cfg_file.close()
-
+with open(cfg_file_name, 'w') as cfg_file:
+     # Three states, with random, linear and idle behaviours. The random
+     # and linear states access memory in the range [0 : 16 Mbyte] with 8
+     # byte and 64 byte accesses respectively.
+     cfg_file.write("STATE 0 10000000 RANDOM 65 0 16777216 8 50000 150000 0\n")
+     cfg_file.write("STATE 1 10000000 LINEAR 65 0 16777216 64 50000 150000 0\n")
+     cfg_file.write("STATE 2 10000000 IDLE\n")
+     cfg_file.write("INIT 0\n")
+     cfg_file.write("TRANSITION 0 1 0.5\n")
+     cfg_file.write("TRANSITION 0 2 0.5\n")
+     cfg_file.write("TRANSITION 1 0 0.5\n")
+     cfg_file.write("TRANSITION 1 2 0.5\n")
+     cfg_file.write("TRANSITION 2 0 0.5\n")
+     cfg_file.write("TRANSITION 2 1 0.5\n")
 # Make a prototype for the tester to be used throughout
 proto_tester = TrafficGen(config_file = cfg_file_name)
 
@@ -246,9 +236,11 @@ def make_cache_level(ncaches, prototypes, level, next_cache):
      # The levels are indexing backwards through the list
      ntesters = testerspec[len(cachespec) - level]
 
-     testers = [proto_tester() for i in xrange(ntesters)]
-     checkers = [MemCheckerMonitor(memchecker = system.memchecker) \
-                      for i in xrange(ntesters)]
+     testers = [proto_tester() for _ in xrange(ntesters)]
+     checkers = [
+         MemCheckerMonitor(memchecker=system.memchecker)
+         for _ in xrange(ntesters)
+     ]
      if ntesters:
           subsys.tester = testers
           subsys.checkers = checkers
@@ -264,8 +256,8 @@ def make_cache_level(ncaches, prototypes, level, next_cache):
           # Create and connect the caches, both the ones fanning out
           # to create the tree, and the ones used to connect testers
           # on this level
-          tree_caches = [prototypes[0]() for i in xrange(ncaches[0])]
-          tester_caches = [proto_l1() for i in xrange(ntesters)]
+          tree_caches = [prototypes[0]() for _ in xrange(ncaches[0])]
+          tester_caches = [proto_l1() for _ in xrange(ntesters)]
 
           subsys.cache = tester_caches + tree_caches
           for cache in tree_caches:
@@ -302,11 +294,7 @@ last_subsys.xbar.master = system.physmem.port
 last_subsys.xbar.point_of_coherency = True
 
 root = Root(full_system = False, system = system)
-if options.atomic:
-    root.system.mem_mode = 'atomic'
-else:
-    root.system.mem_mode = 'timing'
-
+root.system.mem_mode = 'atomic' if options.atomic else 'timing'
 # The system port is never used in the tester so merely connect it
 # to avoid problems
 root.system.system_port = last_subsys.xbar.slave

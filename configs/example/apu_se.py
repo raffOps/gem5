@@ -54,20 +54,20 @@ from common import GPUTLBOptions, GPUTLBConfig
 def setOption(parser, opt_str, value = 1):
     # check to make sure the option actually exists
     if not parser.has_option(opt_str):
-        raise Exception("cannot find %s in list of possible options" % opt_str)
+        raise Exception(f"cannot find {opt_str} in list of possible options")
 
     opt = parser.get_option(opt_str)
     # set the value
-    exec("parser.values.%s = %s" % (opt.dest, value))
+    exec(f"parser.values.{opt.dest} = {value}")
 
 def getOption(parser, opt_str):
     # check to make sure the option actually exists
     if not parser.has_option(opt_str):
-        raise Exception("cannot find %s in list of possible options" % opt_str)
+        raise Exception(f"cannot find {opt_str} in list of possible options")
 
     opt = parser.get_option(opt_str)
     # get the value
-    exec("return_value = parser.values.%s" % opt.dest)
+    exec(f"return_value = parser.values.{opt.dest}")
     return return_value
 
 # Adding script options
@@ -168,12 +168,7 @@ GPUTLBOptions.tlb_options(parser)
 setOption(parser, "--access-backing-store")
 
 # if benchmark root is specified explicitly, that overrides the search path
-if options.benchmark_root:
-    benchmark_path = [options.benchmark_root]
-else:
-    # Set default benchmark search path to current dir
-    benchmark_path = ['.']
-
+benchmark_path = [options.benchmark_root] if options.benchmark_root else ['.']
 ########################## Sanity Check ########################
 
 # Currently the gpu model requires ruby
@@ -181,8 +176,7 @@ if buildEnv['PROTOCOL'] == 'None':
     fatal("GPU model requires ruby")
 
 # Currently the gpu model requires only timing or detailed CPU
-if not (options.cpu_type == "TimingSimpleCPU" or
-   options.cpu_type == "DerivO3CPU"):
+if options.cpu_type not in ["TimingSimpleCPU", "DerivO3CPU"]:
     fatal("GPU model requires TimingSimpleCPU or DerivO3CPU")
 
 # This file can support multiple compute units
@@ -213,16 +207,8 @@ shader = Shader(n_wf = options.wfs_per_simd,
 # the acquire/release operation depending on this impl_kern_boundary_sync
 # flag. This flag=true means pipeline initiates a acquire/release operation
 # at kernel boundary.
-if buildEnv['PROTOCOL'] == 'GPU_RfO':
-    shader.impl_kern_boundary_sync = False
-else:
-    shader.impl_kern_boundary_sync = True
-
-# Switching off per-lane TLB by default
-per_lane = False
-if options.TLB_config == "perLane":
-    per_lane = True
-
+shader.impl_kern_boundary_sync = buildEnv['PROTOCOL'] != 'GPU_RfO'
+per_lane = options.TLB_config == "perLane"
 # List of compute units; one GPU can have multiple compute units
 compute_units = []
 for i in xrange(n_cu):
@@ -256,9 +242,10 @@ for i in xrange(n_cu):
     wavefronts = []
     vrfs = []
     for j in xrange(options.simds_per_cu):
-        for k in xrange(shader.n_wf):
-            wavefronts.append(Wavefront(simdId = j, wf_slot_id = k,
-                                        wfSize = options.wf_size))
+        wavefronts.extend(
+            Wavefront(simdId=j, wf_slot_id=k, wfSize=options.wf_size)
+            for k in xrange(shader.n_wf)
+        )
         vrfs.append(VectorRegisterFile(simd_id=j,
                               num_regs_per_simd=options.vreg_file_size))
     compute_units[-1].wavefronts = wavefronts
@@ -322,11 +309,7 @@ if fast_forward:
         if options.fast_forward:
             cpu.max_insts_any_thread = int(options.fast_forward)
 
-if fast_forward:
-    MainCpuClass = FutureCpuClass
-else:
-    MainCpuClass = CpuClass
-
+MainCpuClass = FutureCpuClass if fast_forward else CpuClass
 # CPs to be used throughout the simulation.
 for i in xrange(options.num_cp):
     cp = MainCpuClass(cpu_id = options.num_cpus + i,
@@ -365,7 +348,7 @@ def find_path(base_list, rel_path, test):
         full_path = os.path.join(base, rel_path)
         if test(full_path):
             return full_path
-    fatal("%s not found in %s" % (rel_path, base_list))
+    fatal(f"{rel_path} not found in {base_list}")
 
 def find_file(base_list, rel_path):
     return find_path(base_list, rel_path, os.path.isfile)

@@ -72,8 +72,8 @@ class MyCacheSystem(RubySystem):
         # Create one controller for each L1 cache (and the cache mem obj.)
         # Create a single directory controller (Really the memory cntrl)
         self.controllers = \
-            [L1Cache(system, self, cpu) for cpu in cpus] + \
-            [DirController(self, system.mem_ranges, mem_ctrls)]
+                [L1Cache(system, self, cpu) for cpu in cpus] + \
+                [DirController(self, system.mem_ranges, mem_ctrls)]
 
         # Create one sequencer per CPU. In many systems this is more
         # complicated since you have to create sequencers for DMA controllers
@@ -87,7 +87,7 @@ class MyCacheSystem(RubySystem):
 
         # We know that we put the controllers in an order such that the first
         # N of them are the L1 caches which need a sequencer pointer
-        for i,c in enumerate(self.controllers[0:len(self.sequencers)]):
+        for i,c in enumerate(self.controllers[:len(self.sequencers)]):
             c.sequencer = self.sequencers[i]
 
         self.num_of_sequencers = len(self.sequencers)
@@ -111,7 +111,7 @@ class MyCacheSystem(RubySystem):
                 cpu.interrupts[0].pio = self.sequencers[i].master
                 cpu.interrupts[0].int_master = self.sequencers[i].slave
                 cpu.interrupts[0].int_slave = self.sequencers[i].master
-            if isa == 'x86' or isa == 'arm':
+            if isa in ['x86', 'arm']:
                 cpu.itb.walker.port = self.sequencers[i].slave
                 cpu.dtb.walker.port = self.sequencers[i].slave
 
@@ -153,10 +153,7 @@ class L1Cache(L1Cache_Controller):
            2. The x86 mwait instruction is built on top of coherence
            3. The local exclusive monitor in ARM systems
         """
-        if type(cpu) is DerivO3CPU or \
-           buildEnv['TARGET_ISA'] in ('x86', 'arm'):
-            return True
-        return False
+        return type(cpu) is DerivO3CPU or buildEnv['TARGET_ISA'] in ('x86', 'arm')
 
     def connectQueues(self, ruby_system):
         """Connect all of the queues for this controller.

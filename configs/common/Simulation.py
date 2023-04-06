@@ -74,7 +74,7 @@ def setCPUClass(options):
     CPUClass = None
     if TmpClass.require_caches() and \
             not options.caches and not options.ruby:
-        fatal("%s must be used with caches" % options.cpu_type)
+        fatal(f"{options.cpu_type} must be used with caches")
 
     if options.checkpoint_restore != None:
         if options.restore_with_cpu != options.cpu_type:
@@ -144,7 +144,7 @@ def findCptDir(options, cptdir, testsys):
                 fatal('Unable to find simpoint')
             inst += int(testsys.cpu[0].workload[0].simpoint)
 
-        checkpoint_dir = joinpath(cptdir, "cpt.%s.%s" % (options.bench, inst))
+        checkpoint_dir = joinpath(cptdir, f"cpt.{options.bench}.{inst}")
         if not exists(checkpoint_dir):
             fatal("Unable to find checkpoint directory %s", checkpoint_dir)
 
@@ -156,8 +156,7 @@ def findCptDir(options, cptdir, testsys):
                     '_weight_([\d\.e\-]+)_interval_(\d+)_warmup_(\d+)')
         cpts = []
         for dir in dirs:
-            match = expr.match(dir)
-            if match:
+            if match := expr.match(dir):
                 cpts.append(dir)
         cpts.sort()
 
@@ -165,17 +164,14 @@ def findCptDir(options, cptdir, testsys):
         if cpt_num > len(cpts):
             fatal('Checkpoint %d not found', cpt_num)
         checkpoint_dir = joinpath(cptdir, cpts[cpt_num - 1])
-        match = expr.match(cpts[cpt_num - 1])
-        if match:
+        if match := expr.match(cpts[cpt_num - 1]):
             index = int(match.group(1))
             start_inst = int(match.group(2))
             weight_inst = float(match.group(3))
             interval_length = int(match.group(4))
             warmup_length = int(match.group(5))
         print("Resuming from", checkpoint_dir)
-        simpoint_start_insts = []
-        simpoint_start_insts.append(warmup_length)
-        simpoint_start_insts.append(warmup_length + interval_length)
+        simpoint_start_insts = [warmup_length, warmup_length + interval_length]
         testsys.cpu[0].simpoint_start_insts = simpoint_start_insts
         if testsys.switch_cpus != None:
             testsys.switch_cpus[0].simpoint_start_insts = simpoint_start_insts
@@ -189,8 +185,7 @@ def findCptDir(options, cptdir, testsys):
         expr = re.compile('cpt\.([0-9]+)')
         cpts = []
         for dir in dirs:
-            match = expr.match(dir)
-            if match:
+            if match := expr.match(dir):
                 cpts.append(match.group(1))
 
         cpts.sort(lambda a,b: cmp(long(a), long(b)))
@@ -200,7 +195,7 @@ def findCptDir(options, cptdir, testsys):
             fatal('Checkpoint %d not found', cpt_num)
 
         cpt_starttick = int(cpts[cpt_num - 1])
-        checkpoint_dir = joinpath(cptdir, "cpt.%s" % cpts[cpt_num - 1])
+        checkpoint_dir = joinpath(cptdir, f"cpt.{cpts[cpt_num - 1]}")
 
     return cpt_starttick, checkpoint_dir
 
@@ -215,7 +210,7 @@ def scriptCheckpoints(options, maxtick, cptdir):
         print("Creating checkpoint at inst:%d" % (checkpoint_inst))
         exit_event = m5.simulate()
         exit_cause = exit_event.getCause()
-        print("exit cause = %s" % exit_cause)
+        print(f"exit cause = {exit_cause}")
 
         # skip checkpoint instructions should they exist
         while exit_cause == "checkpoint":
@@ -309,8 +304,7 @@ def parseSimpointAnalysisFile(options, testsys):
         line = simpoint_file.readline()
         if not line:
             break
-        m = re.match("(\d+)\s+(\d+)", line)
-        if m:
+        if m := re.match("(\d+)\s+(\d+)", line):
             interval = int(m.group(1))
         else:
             fatal('unrecognized line in simpoint file!')
@@ -318,8 +312,7 @@ def parseSimpointAnalysisFile(options, testsys):
         line = weight_file.readline()
         if not line:
             fatal('not enough lines in simpoint weight file!')
-        m = re.match("([0-9\.e\-]+)\s+(\d+)", line)
-        if m:
+        if m := re.match("([0-9\.e\-]+)\s+(\d+)", line):
             weight = float(m.group(1))
         else:
             fatal('unrecognized line in simpoint weight file!')
@@ -341,8 +334,7 @@ def parseSimpointAnalysisFile(options, testsys):
     simpoints.sort(key=lambda obj: obj[2])
     for s in simpoints:
         interval, weight, starting_inst_count, actual_warmup_length = s
-        print(str(interval), str(weight), starting_inst_count,
-            actual_warmup_length)
+        print(interval, weight, starting_inst_count, actual_warmup_length)
         simpoint_start_insts.append(starting_inst_count)
 
     print("Total # of simpoints:", len(simpoints))
@@ -401,9 +393,9 @@ def restoreSimpointCheckpoint():
         exit_event = m5.simulate()
         exit_cause = exit_event.getCause()
 
-        if exit_cause == "simpoint starting point found":
-            print("Done running SimPoint!")
-            sys.exit(exit_event.getCode())
+    if exit_cause == "simpoint starting point found":
+        print("Done running SimPoint!")
+        sys.exit(exit_event.getCode())
 
     print('Exiting @ tick %i because %s' % (m5.curTick(), exit_cause))
     sys.exit(exit_event.getCode())
@@ -419,9 +411,9 @@ def repeatSwitch(testsys, repeat_switch_cpu_list, maxtick, switch_freq):
 
         m5.switchCpus(testsys, repeat_switch_cpu_list)
 
-        tmp_cpu_list = []
-        for old_cpu, new_cpu in repeat_switch_cpu_list:
-            tmp_cpu_list.append((new_cpu, old_cpu))
+        tmp_cpu_list = [
+            (new_cpu, old_cpu) for old_cpu, new_cpu in repeat_switch_cpu_list
+        ]
         repeat_switch_cpu_list = tmp_cpu_list
 
         if (maxtick - m5.curTick()) <= switch_freq:

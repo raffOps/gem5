@@ -78,8 +78,9 @@ def simple_parser(suffix='', cast=lambda i: i):
 def tick_parser(cast=lambda i: i):
     def body(cls, flags, param):
         old_param = param
-        ret = cls(cast(str(param) + 't'))
+        ret = cls(cast(f'{str(param)}t'))
         return ret
+
     return body
 
 def addr_range_parser(cls, flags, param):
@@ -135,11 +136,7 @@ class PortConnection(object):
     def from_string(cls, str):
         m = re.match('(.*)\.([^.\[]+)(\[(\d+)\])?', str)
         object_name, port_name, whole_index, index = m.groups()
-        if index is not None:
-            index = int(index)
-        else:
-            index = 0
-
+        index = int(index) if index is not None else 0
         return PortConnection(object_name, port_name, index)
 
     def __str__(self):
@@ -151,10 +148,7 @@ class PortConnection(object):
 
 def to_list(v):
     """Convert any non list to a singleton list"""
-    if isinstance(v, list):
-        return v
-    else:
-        return [v]
+    return v if isinstance(v, list) else [v]
 
 class ConfigManager(object):
     """Manager for parsing a Root configuration from a config file"""
@@ -176,13 +170,13 @@ class ConfigManager(object):
         object_type = self.config.get_param(object_name, 'type')
 
         if object_type not in sim_object_classes_by_name:
-            raise Exception('No SimObject type %s is available to'
-                ' build: %s' % (object_type, object_name))
-
-        object_class = sim_object_classes_by_name[object_type]
+            raise Exception(
+                f'No SimObject type {object_type} is available to build: {object_name}'
+            )
 
         parsed_params = {}
 
+        object_class = sim_object_classes_by_name[object_type]
         for param_name, param in object_class._params.iteritems():
             if issubclass(param.ptype, m5.params.ParamValue):
                 if isinstance(param, m5.params.VectorParamDesc):
@@ -260,11 +254,7 @@ class ConfigManager(object):
 
         m = re.match('(.*)\.([^.\[]+)(\[(\d+)\])?', port)
         peer, peer_port, whole_index, index = m.groups()
-        if index is not None:
-            index = int(index)
-        else:
-            index = 0
-
+        index = int(index) if index is not None else 0
         return (peer, self.objects_by_name[peer], peer_port, index)
 
     def gather_port_connections(self, object_name, obj):
@@ -280,11 +270,13 @@ class ConfigManager(object):
             # Assume that unnamed ports are unconnected
             peers = self.config.get_port_peers(object_name, port_name)
 
-            for index, peer in zip(xrange(0, len(peers)), peers):
-                parsed_ports.append((
+            parsed_ports.extend(
+                (
                     PortConnection(object_name, port.name, index),
-                    PortConnection.from_string(peer)))
-
+                    PortConnection.from_string(peer),
+                )
+                for index, peer in zip(xrange(0, len(peers)), peers)
+            )
         return parsed_ports
 
     def bind_ports(self, connections):
@@ -427,10 +419,7 @@ class ConfigIniFile(ConfigFile):
             child_names = []
 
         def make_path(child_name):
-            if object_name == 'root':
-                return child_name
-            else:
-                return '%s.%s' % (object_name, child_name)
+            return child_name if object_name == 'root' else f'{object_name}.{child_name}'
 
         return [ (name, make_path(name)) for name in child_names ]
 
@@ -498,8 +487,11 @@ class ConfigJsonFile(ConfigFile):
         for name, node in obj.iteritems():
             if self.is_sim_object(node):
                 children.append((name, node['path']))
-            elif isinstance(node, list) and node != [] and all([
-                self.is_sim_object(e) for e in node ]):
+            elif (
+                isinstance(node, list)
+                and node != []
+                and all(self.is_sim_object(e) for e in node)
+            ):
                 children.append((name, [ e['path'] for e in node ]))
 
         return children
@@ -509,12 +501,13 @@ class ConfigJsonFile(ConfigFile):
         elements"""
         obj = self.object_dicts[object_name]
 
-        peers = []
-        if port_name in obj and 'peer' in obj[port_name] and \
-            'role' in obj[port_name]:
-            peers = to_list(obj[port_name]['peer'])
-
-        return peers
+        return (
+            to_list(obj[port_name]['peer'])
+            if port_name in obj
+            and 'peer' in obj[port_name]
+            and 'role' in obj[port_name]
+            else []
+        )
 
 parser = argparse.ArgumentParser()
 
@@ -528,11 +521,9 @@ args = parser.parse_args(sys.argv[1:])
 
 if args.config_file.endswith('.ini'):
     config = ConfigIniFile()
-    config.load(args.config_file)
 else:
     config = ConfigJsonFile()
-    config.load(args.config_file)
-
+config.load(args.config_file)
 ticks.fixGlobalFrequency()
 
 mgr = ConfigManager(config)

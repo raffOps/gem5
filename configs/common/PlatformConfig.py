@@ -79,7 +79,7 @@ def get(name):
     try:
         return _platform_classes[real_name]
     except KeyError:
-        fatal("%s is not a valid Platform model." % (name,))
+        fatal(f"{name} is not a valid Platform model.")
 
 def print_platform_list():
     """Print a list of available Platform classes including their aliases."""
@@ -89,10 +89,7 @@ def print_platform_list():
     for name, cls in _platform_classes.items():
         print("\t%s" % name)
 
-        # Try to extract the class documentation from the class help
-        # string.
-        doc = inspect.getdoc(cls)
-        if doc:
+        if doc := inspect.getdoc(cls):
             for line in doc_wrapper.wrap(doc):
                 print(line)
 

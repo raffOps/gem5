@@ -68,7 +68,7 @@ system.system_port = system.membus.slave
 # get ISA for the binary to run.
 isa = str(m5.defines.buildEnv['TARGET_ISA']).lower()
 # run 'hello' and use the compiled ISA to find the binary
-binary = 'tests/test-progs/hello/bin/' + isa + '/linux/hello'
+binary = f'tests/test-progs/hello/bin/{isa}/linux/hello'
 # create a process for a simple "Hello World" application
 process = Process()
 # cmd is a list which begins with the executable (like argv)

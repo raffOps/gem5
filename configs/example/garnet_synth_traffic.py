@@ -102,17 +102,19 @@ if options.inj_vnet > 2:
     sys.exit(1)
 
 
-cpus = [ GarnetSyntheticTraffic(
-                     num_packets_max=options.num_packets_max,
-                     single_sender=options.single_sender_id,
-                     single_dest=options.single_dest_id,
-                     sim_cycles=options.sim_cycles,
-                     traffic_type=options.synthetic,
-                     inj_rate=options.injectionrate,
-                     inj_vnet=options.inj_vnet,
-                     precision=options.precision,
-                     num_dest=options.num_dirs) \
-         for i in xrange(options.num_cpus) ]
+cpus = [
+    GarnetSyntheticTraffic(
+        num_packets_max=options.num_packets_max,
+        single_sender=options.single_sender_id,
+        single_dest=options.single_dest_id,
+        sim_cycles=options.sim_cycles,
+        traffic_type=options.synthetic,
+        inj_rate=options.injectionrate,
+        inj_vnet=options.inj_vnet,
+        precision=options.precision,
+        num_dest=options.num_dirs,
+    ) for _ in xrange(options.num_cpus)
+]
 
 # create the desired simulated system
 system = System(cpu = cpus, mem_ranges = [AddrRange(options.mem_size)])
@@ -130,14 +132,11 @@ Ruby.create_system(options, False, system)
 system.ruby.clk_domain = SrcClockDomain(clock = options.ruby_clock,
                                         voltage_domain = system.voltage_domain)
 
-i = 0
-for ruby_port in system.ruby._cpu_ports:
+for i, ruby_port in enumerate(system.ruby._cpu_ports):
      #
      # Tie the cpu test ports to the ruby cpu port
      #
      cpus[i].test = ruby_port.slave
-     i += 1
-
 # -----------------------
 # run simulation
 # -----------------------

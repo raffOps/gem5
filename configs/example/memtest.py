@@ -119,14 +119,8 @@ def numtesters(cachespec, testerspec):
      # Determine the tester multiplier for each level as the
      # elements are per subsystem and it fans out
      multiplier = [1]
-     for c in cachespec:
-          multiplier.append(multiplier[-1] * c)
-
-     total = 0
-     for t, m in zip(testerspec, multiplier):
-          total += t * m
-
-     return total
+     multiplier.extend(multiplier[-1] * c for c in cachespec)
+     return sum(t * m for t, m in zip(testerspec, multiplier))
 
 block_size = 64
 
@@ -136,8 +130,8 @@ if options.random:
      # Generate a tree with a valid number of testers
      while True:
           tree_depth = random.randint(1, 4)
-          cachespec = [random.randint(1, 3) for i in range(tree_depth)]
-          testerspec = [random.randint(1, 3) for i in range(tree_depth + 1)]
+          cachespec = [random.randint(1, 3) for _ in range(tree_depth)]
+          testerspec = [random.randint(1, 3) for _ in range(tree_depth + 1)]
           if numtesters(cachespec, testerspec) < block_size:
                break
 
@@ -151,7 +145,7 @@ else:
           print("Error: Unable to parse caches or testers option")
           sys.exit(1)
 
-     if len(cachespec) < 1:
+     if not cachespec:
           print("Error: Must have at least one level of caches")
           sys.exit(1)
 
@@ -174,8 +168,7 @@ else:
                sys.exit(1)
 
      if numtesters(cachespec, testerspec) > block_size:
-          print("Error: Limited to %s testers because of false sharing"
-              % (block_size))
+          print(f"Error: Limited to {block_size} testers because of false sharing")
           sys.exit(1)
 
 # Define a prototype L1 cache that we scale for all successive levels
@@ -184,11 +177,7 @@ proto_l1 = Cache(size = '32kB', assoc = 4,
                  tgts_per_mshr = 8, clusivity = 'mostly_incl',
                  writeback_clean = True)
 
-if options.blocking:
-     proto_l1.mshrs = 1
-else:
-     proto_l1.mshrs = 4
-
+proto_l1.mshrs = 1 if options.blocking else 4
 cache_proto = [proto_l1]
 
 # Now add additional cache levels (if any) by scaling L1 params, the
@@ -255,9 +244,10 @@ def make_cache_level(ncaches, prototypes, level, next_cache):
      # testers closer to the memory (larger level) to prevent them
      # hogging all the bandwidth
      limit = (len(cachespec) - level + 1) * 100000000
-     testers = [proto_tester(interval = 10 * (level * level + 1),
-                             progress_check = limit) \
-                     for i in xrange(ntesters)]
+     testers = [
+         proto_tester(interval=10 * (level * level + 1), progress_check=limit)
+         for _ in xrange(ntesters)
+     ]
      if ntesters:
           subsys.tester = testers
 
@@ -272,8 +262,8 @@ def make_cache_level(ncaches, prototypes, level, next_cache):
           # Create and connect the caches, both the ones fanning out
           # to create the tree, and the ones used to connect testers
           # on this level
-          tree_caches = [prototypes[0]() for i in xrange(ncaches[0])]
-          tester_caches = [proto_l1() for i in xrange(ntesters)]
+          tree_caches = [prototypes[0]() for _ in xrange(ncaches[0])]
+          tester_caches = [proto_l1() for _ in xrange(ntesters)]
 
           subsys.cache = tester_caches + tree_caches
           for cache in tree_caches:
@@ -316,11 +306,7 @@ else:
      last_subsys.xbar.master = system.physmem.port
 
 root = Root(full_system = False, system = system)
-if options.atomic:
-    root.system.mem_mode = 'atomic'
-else:
-    root.system.mem_mode = 'timing'
-
+root.system.mem_mode = 'atomic' if options.atomic else 'timing'
 # The system port is never used in the tester so merely connect it
 # to avoid problems
 root.system.system_port = last_subsys.xbar.slave

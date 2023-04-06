@@ -208,21 +208,21 @@ class TCC(RubyCache):
     def create(self, options):
         self.assoc = options.tcc_assoc
         if hasattr(options, 'bw_scalor') and options.bw_scalor > 0:
-          s = options.num_compute_units
-          tcc_size = s * 128
-          tcc_size = str(tcc_size)+'kB'
-          self.size = MemorySize(tcc_size)
-          self.dataArrayBanks = 64
-          self.tagArrayBanks = 64
+            s = options.num_compute_units
+            tcc_size = s * 128
+            tcc_size = f'{str(tcc_size)}kB'
+            self.size = MemorySize(tcc_size)
+            self.dataArrayBanks = 64
+            self.tagArrayBanks = 64
         else:
-          self.size = MemorySize(options.tcc_size)
-          self.dataArrayBanks = 256 / options.num_tccs #number of data banks
-          self.tagArrayBanks = 256 / options.num_tccs #number of tag banks
+            self.size = MemorySize(options.tcc_size)
+            self.dataArrayBanks = 256 / options.num_tccs #number of data banks
+            self.tagArrayBanks = 256 / options.num_tccs #number of tag banks
         self.size.value = self.size.value / options.num_tccs
         if ((self.size.value / long(self.assoc)) < 128):
             self.size.value = long(128 * self.assoc)
         self.start_index_bit = math.log(options.cacheline_size, 2) + \
-                               math.log(options.num_tccs, 2)
+                                   math.log(options.num_tccs, 2)
         self.replacement_policy = PseudoLRUReplacementPolicy(assoc = self.assoc)
 
 class TCCCntrl(TCC_Controller, CntrlBase):

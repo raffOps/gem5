@@ -42,16 +42,10 @@ class SysConfig:
         self.ostype = os_type
 
     def script(self):
-        if self.scriptname:
-            return script(self.scriptname)
-        else:
-            return ''
+        return script(self.scriptname) if self.scriptname else ''
 
     def mem(self):
-        if self.memsize:
-            return self.memsize
-        else:
-            return '128MB'
+        return self.memsize or '128MB'
 
     def disk(self):
         if self.diskname:
@@ -65,15 +59,13 @@ class SysConfig:
         elif buildEnv['TARGET_ISA'] == 'sparc':
             return env.get('LINUX_IMAGE', disk('disk.s10hw2'))
         else:
-            print("Don't know what default disk image to use for %s ISA" %
-                buildEnv['TARGET_ISA'])
+            print(
+                f"Don't know what default disk image to use for {buildEnv['TARGET_ISA']} ISA"
+            )
             exit(1)
 
     def rootdev(self):
-        if self.root:
-            return self.root
-        else:
-            return '/dev/sda1'
+        return self.root or '/dev/sda1'
 
     def os_type(self):
         return self.ostype

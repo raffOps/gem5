@@ -107,10 +107,7 @@ def define_options(parser):
     parser.add_option("--cpu-to-dir-latency", type="int", default=15)
 
 def construct(options, system, ruby_system):
-    if (buildEnv['PROTOCOL'] != 'GPU_VIPER' or
-        buildEnv['PROTOCOL'] != 'GPU_VIPER_Region' or
-        buildEnv['PROTOCOL'] != 'GPU_VIPER_Baseline'):
-        panic("This script requires VIPER based protocols \
+    panic("This script requires VIPER based protocols \
         to be built.")
     cpu_sequencers = []
     cpuCluster = None

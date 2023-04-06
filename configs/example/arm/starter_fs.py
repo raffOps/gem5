@@ -43,6 +43,7 @@ Research Starter Kit on System Modeling. More information can be found
 at: http://www.arm.com/ResearchEnablement/SystemModeling
 """
 
+
 from __future__ import print_function
 
 import os
@@ -61,7 +62,7 @@ import devices
 
 
 default_dist_version = '20170616'
-default_kernel = 'vmlinux.vexpress_gem5_v1_64.' + default_dist_version
+default_kernel = f'vmlinux.vexpress_gem5_v1_64.{default_dist_version}'
 default_disk = 'linaro-minimal-aarch64.img'
 
 
@@ -92,20 +93,17 @@ def create_cow_image(name):
 def create(args):
     ''' Create and configure the system object. '''
 
-    if not args.dtb:
-        dtb_file = SysPaths.binary("armv8_gem5_v1_%icpu.%s.dtb" %
-                                   (args.num_cores, default_dist_version))
-    else:
-        dtb_file = args.dtb
-
+    dtb_file = args.dtb or SysPaths.binary(
+        "armv8_gem5_v1_%icpu.%s.dtb" % (args.num_cores, default_dist_version)
+    )
     if args.script and not os.path.isfile(args.script):
-        print("Error: Bootscript %s does not exist" % args.script)
+        print(f"Error: Bootscript {args.script} does not exist")
         sys.exit(1)
 
     cpu_class = cpu_types[args.cpu][0]
     mem_mode = cpu_class.memory_mode()
     # Only simulate caches when using a timing CPU (e.g., the HPI model)
-    want_caches = True if mem_mode == "timing" else False
+    want_caches = mem_mode == "timing"
 
     system = devices.SimpleSystem(want_caches,
                                   args.mem_size,
@@ -147,7 +145,7 @@ def create(args):
     # Create a cache hierarchy for the cluster. We are assuming that
     # clusters have core-private L1 caches and an L2 that's shared
     # within the cluster.
-    for cluster in system.cpu_cluster:
+    for _ in system.cpu_cluster:
         system.addCaches(want_caches, last_cache_level=2)
 
     # Setup gem5's minimal Linux boot loader.
@@ -155,19 +153,12 @@ def create(args):
 
     # Linux boot command flags
     kernel_cmd = [
-        # Tell Linux to use the simulated serial port as a console
         "console=ttyAMA0",
-        # Hard-code timi
         "lpj=19988480",
-        # Disable address space randomisation to get a consistent
-        # memory layout.
         "norandmaps",
-        # Tell Linux where to find the root disk image.
         "root=/dev/vda1",
-        # Mount the root disk read-write by default.
         "rw",
-        # Tell Linux about the amount of physical memory present.
-        "mem=%s" % args.mem_size,
+        f"mem={args.mem_size}",
     ]
     system.boot_osflags = " ".join(kernel_cmd)
 
@@ -177,7 +168,7 @@ def create(args):
 def run(args):
     cptdir = m5.options.outdir
     if args.checkpoint:
-        print("Checkpoint directory: %s" % cptdir)
+        print(f"Checkpoint directory: {cptdir}")
 
     while True:
         event = m5.simulate()

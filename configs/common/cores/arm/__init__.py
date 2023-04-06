@@ -44,7 +44,7 @@ _cpu_modules = [
 
 for c in _cpu_modules:
     try:
-        import_module("." + c, package=__package__)
+        import_module(f".{c}", package=__package__)
     except NameError:
         # Failed to import a CPU model due to a missing
         # dependency. This typically happens if gem5 has been compiled

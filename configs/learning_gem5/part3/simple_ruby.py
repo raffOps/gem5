@@ -37,6 +37,7 @@ IMPORTANT: If you modify this file, it's likely that the Learning gem5 book
            also needs to be updated. For now, email Jason <jason@lowepower.com>
 
 """
+
 from __future__ import print_function
 
 # import the m5 (gem5) library created when gem5 is built
@@ -61,7 +62,7 @@ system.mem_mode = 'timing'               # Use timing accesses
 system.mem_ranges = [AddrRange('512MB')] # Create an address range
 
 # Create a pair of simple CPUs
-system.cpu = [TimingSimpleCPU() for i in range(2)]
+system.cpu = [TimingSimpleCPU() for _ in range(2)]
 
 # Create a DDR3 memory controller and connect it to the membus
 system.mem_ctrl = DDR3_1600_8x8()
@@ -79,7 +80,7 @@ system.caches.setup(system, system.cpu, [system.mem_ctrl])
 isa = str(m5.defines.buildEnv['TARGET_ISA']).lower()
 
 # Run application and use the compiled ISA to find the binary
-binary = 'tests/test-progs/threads/bin/' + isa + '/linux/threads'
+binary = f'tests/test-progs/threads/bin/{isa}/linux/threads'
 
 # Create a process for a simple "multi-threaded" application
 process = Process()
@@ -98,6 +99,4 @@ m5.instantiate()
 
 print("Beginning simulation!")
 exit_event = m5.simulate()
-print('Exiting @ tick {} because {}'.format(
-         m5.curTick(), exit_event.getCause())
-     )
+print(f'Exiting @ tick {m5.curTick()} because {exit_event.getCause()}')

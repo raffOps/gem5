@@ -68,9 +68,9 @@ class TestCacheSystem(RubySystem):
         self.number_of_virtual_networks = 3
         self.network.number_of_virtual_networks = 3
 
-        self.controllers = \
-            [L1Cache(system, self, self) for i in range(num_testers)] + \
-            [DirController(self, system.mem_ranges, mem_ctrls)]
+        self.controllers = [
+            L1Cache(system, self, self) for _ in range(num_testers)
+        ] + [DirController(self, system.mem_ranges, mem_ctrls)]
 
         self.sequencers = [RubySequencer(version = i,
                               # I/D cache is combined and grab from ctrl
@@ -79,7 +79,7 @@ class TestCacheSystem(RubySystem):
                               clk_domain = self.clk_domain,
                               ) for i in range(num_testers)]
 
-        for i,c in enumerate(self.controllers[0:len(self.sequencers)]):
+        for i,c in enumerate(self.controllers[:len(self.sequencers)]):
             c.sequencer = self.sequencers[i]
 
         self.num_of_sequencers = len(self.sequencers)
@@ -96,13 +96,15 @@ class TestCacheSystem(RubySystem):
 
         # Connect up the sequencers to the random tester
         for seq in self.sequencers:
-            if seq.support_data_reqs and seq.support_inst_reqs:
+            if (
+                seq.support_data_reqs
+                and seq.support_inst_reqs
+                or not seq.support_data_reqs
+                and seq.support_inst_reqs
+            ):
                 tester.cpuInstDataPort = seq.slave
             elif seq.support_data_reqs:
                 tester.cpuDataPort = seq.slave
-            elif seq.support_inst_reqs:
-                tester.cpuInstDataPort = seq.slave
-
             # Do not automatically retry stalled Ruby requests
             seq.no_retry_on_stall = True
 
